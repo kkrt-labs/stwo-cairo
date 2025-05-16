@@ -1,6 +1,5 @@
-// AIR version 1d0330d7
 use crate::components::prelude::*;
-use crate::components::subroutines::decode_instruction_f1edd::DecodeInstructionF1Edd;
+use crate::components::subroutines::decode_instruction_fdb6e::DecodeInstructionFdb6E;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
 use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
 
@@ -81,20 +80,18 @@ impl FrameworkEval for Eval {
         let input_ap_col1 = eval.next_trace_mask();
         let input_fp_col2 = eval.next_trace_mask();
         let offset2_col3 = eval.next_trace_mask();
-        let op1_base_fp_col4 = eval.next_trace_mask();
-        let stored_fp_id_col5 = eval.next_trace_mask();
-        let stored_fp_limb_0_col6 = eval.next_trace_mask();
-        let stored_fp_limb_1_col7 = eval.next_trace_mask();
-        let stored_fp_limb_2_col8 = eval.next_trace_mask();
-        let stored_ret_pc_id_col9 = eval.next_trace_mask();
-        let stored_ret_pc_limb_0_col10 = eval.next_trace_mask();
-        let stored_ret_pc_limb_1_col11 = eval.next_trace_mask();
-        let stored_ret_pc_limb_2_col12 = eval.next_trace_mask();
-        let mem1_base_col13 = eval.next_trace_mask();
-        let next_pc_id_col14 = eval.next_trace_mask();
-        let next_pc_limb_0_col15 = eval.next_trace_mask();
-        let next_pc_limb_1_col16 = eval.next_trace_mask();
-        let next_pc_limb_2_col17 = eval.next_trace_mask();
+        let stored_fp_id_col4 = eval.next_trace_mask();
+        let stored_fp_limb_0_col5 = eval.next_trace_mask();
+        let stored_fp_limb_1_col6 = eval.next_trace_mask();
+        let stored_fp_limb_2_col7 = eval.next_trace_mask();
+        let stored_ret_pc_id_col8 = eval.next_trace_mask();
+        let stored_ret_pc_limb_0_col9 = eval.next_trace_mask();
+        let stored_ret_pc_limb_1_col10 = eval.next_trace_mask();
+        let stored_ret_pc_limb_2_col11 = eval.next_trace_mask();
+        let next_pc_id_col12 = eval.next_trace_mask();
+        let next_pc_limb_0_col13 = eval.next_trace_mask();
+        let next_pc_limb_1_col14 = eval.next_trace_mask();
+        let next_pc_limb_2_col15 = eval.next_trace_mask();
         let enabler = eval.next_trace_mask();
         let stored_fp_limb_3_col9 = eval.next_trace_mask();
         let stored_fp_limb_4_col10 = eval.next_trace_mask();
@@ -106,21 +103,20 @@ impl FrameworkEval for Eval {
 
         #[allow(clippy::unused_unit)]
         #[allow(unused_variables)]
-        let [decode_instruction_f1edd_output_tmp_32b66_4_offset2, decode_instruction_f1edd_output_tmp_32b66_4_op1_base_ap] =
-            DecodeInstructionF1Edd::evaluate(
+        let [decode_instruction_fdb6e_output_tmp_32b66_3_offset2] =
+            DecodeInstructionFdb6E::evaluate(
                 [input_pc_col0.clone()],
                 offset2_col3.clone(),
-                op1_base_fp_col4.clone(),
                 &self.verify_instruction_lookup_elements,
                 &mut eval,
             );
         ReadPositiveNumBits72::evaluate(
             M31_1.clone(),
             [input_ap_col1.clone()],
-            stored_fp_id_col5.clone(),
-            stored_fp_limb_0_col6.clone(),
-            stored_fp_limb_1_col7.clone(),
-            stored_fp_limb_2_col8.clone(),
+            stored_fp_id_col4.clone(),
+            stored_fp_limb_0_col5.clone(),
+            stored_fp_limb_1_col6.clone(),
+            stored_fp_limb_2_col7.clone(),
             stored_fp_limb_3_col9.clone(),
             stored_fp_limb_4_col10.clone(),
             stored_fp_limb_5_col11.clone(),
@@ -132,45 +128,38 @@ impl FrameworkEval for Eval {
         );
         //[ap] = fp.
         eval.add_constraint(
-            (((stored_fp_limb_0_col6.clone() + (stored_fp_limb_1_col7.clone() * M31_512.clone()))
-                + (stored_fp_limb_2_col8.clone() * M31_262144.clone()))
+            (((stored_fp_limb_0_col5.clone() + (stored_fp_limb_1_col6.clone() * M31_512.clone()))
+                + (stored_fp_limb_2_col7.clone() * M31_262144.clone()))
                 - input_fp_col2.clone()),
         );
         ReadPositiveNumBits27::evaluate(
             M31_1.clone(),
             [(input_ap_col1.clone() + M31_1.clone())],
-            stored_ret_pc_id_col9.clone(),
-            stored_ret_pc_limb_0_col10.clone(),
-            stored_ret_pc_limb_1_col11.clone(),
-            stored_ret_pc_limb_2_col12.clone(),
+            stored_ret_pc_id_col8.clone(),
+            stored_ret_pc_limb_0_col9.clone(),
+            stored_ret_pc_limb_1_col10.clone(),
+            stored_ret_pc_limb_2_col11.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
         );
         //[ap+1] = return_pc.
         eval.add_constraint(
-            (((stored_ret_pc_limb_0_col10.clone()
-                + (stored_ret_pc_limb_1_col11.clone() * M31_512.clone()))
-                + (stored_ret_pc_limb_2_col12.clone() * M31_262144.clone()))
+            (((stored_ret_pc_limb_0_col9.clone()
+                + (stored_ret_pc_limb_1_col10.clone() * M31_512.clone()))
+                + (stored_ret_pc_limb_2_col11.clone() * M31_262144.clone()))
                 - (input_pc_col0.clone() + M31_1.clone())),
-        );
-        // mem1_base.
-        eval.add_constraint(
-            (mem1_base_col13.clone()
-                - ((op1_base_fp_col4.clone() * input_fp_col2.clone())
-                    + (decode_instruction_f1edd_output_tmp_32b66_4_op1_base_ap.clone()
-                        * input_ap_col1.clone()))),
         );
         ReadPositiveNumBits27::evaluate(
             M31_1.clone(),
             [
                 (input_ap_col1.clone()
-                    + decode_instruction_f1edd_output_tmp_32b66_4_offset2.clone()),
+                    + decode_instruction_fdb6e_output_tmp_32b66_3_offset2.clone()),
             ],
-            next_pc_id_col14.clone(),
-            next_pc_limb_0_col15.clone(),
-            next_pc_limb_1_col16.clone(),
-            next_pc_limb_2_col17.clone(),
+            next_pc_id_col12.clone(),
+            next_pc_limb_0_col13.clone(),
+            next_pc_limb_1_col14.clone(),
+            next_pc_limb_2_col15.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
@@ -189,8 +178,8 @@ impl FrameworkEval for Eval {
             &self.opcodes_lookup_elements,
             -E::EF::from(enabler.clone()),
             &[
-                ((next_pc_limb_0_col15.clone() + (next_pc_limb_1_col16.clone() * M31_512.clone()))
-                    + (next_pc_limb_2_col17.clone() * M31_262144.clone())),
+                ((next_pc_limb_0_col13.clone() + (next_pc_limb_1_col14.clone() * M31_512.clone()))
+                    + (next_pc_limb_2_col15.clone() * M31_262144.clone())),
                 (input_ap_col1.clone() + M31_2.clone()),
                 (input_ap_col1.clone() + M31_2.clone()),
             ],

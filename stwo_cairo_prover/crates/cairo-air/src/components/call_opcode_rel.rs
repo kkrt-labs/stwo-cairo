@@ -1,4 +1,3 @@
-// AIR version 1d0330d7
 use crate::components::prelude::*;
 use crate::components::subroutines::decode_instruction_2a7a2::DecodeInstruction2A7A2;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
@@ -188,38 +187,5 @@ impl FrameworkEval for Eval {
 
         eval.finalize_logup_in_pairs();
         eval
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use num_traits::Zero;
-    use rand::rngs::SmallRng;
-    use rand::{Rng, SeedableRng};
-    use stwo_prover::constraint_framework::expr::ExprEvaluator;
-    use stwo_prover::core::fields::qm31::QM31;
-
-    use super::*;
-    use crate::components::constraints_regression_test_values::CALL_OPCODE_REL_IMM;
-
-    #[test]
-    fn call_opcode_rel_imm_constraints_regression() {
-        let mut rng = SmallRng::seed_from_u64(0);
-        let eval = Eval {
-            claim: Claim { log_size: 4 },
-            verify_instruction_lookup_elements: relations::VerifyInstruction::dummy(),
-            memory_address_to_id_lookup_elements: relations::MemoryAddressToId::dummy(),
-            memory_id_to_big_lookup_elements: relations::MemoryIdToBig::dummy(),
-            opcodes_lookup_elements: relations::Opcodes::dummy(),
-        };
-        let expr_eval = eval.evaluate(ExprEvaluator::new());
-        let assignment = expr_eval.random_assignment();
-
-        let mut sum = QM31::zero();
-        for c in expr_eval.constraints {
-            sum += c.assign(&assignment) * rng.gen::<QM31>();
-        }
-
-        assert_eq!(sum, CALL_OPCODE_REL_IMM);
     }
 }

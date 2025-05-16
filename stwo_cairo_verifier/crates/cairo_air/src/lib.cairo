@@ -45,7 +45,11 @@ use components::blake_round_sigma::{
 use components::call_opcode::{
     ClaimImpl as CallOpcodeClaimImpl, InteractionClaimImpl as CallOpcodeInteractionClaimImpl,
 };
-use components::call_opcode_rel_imm::{
+use components::call_opcode_op_1_base_fp::{
+    ClaimImpl as CallOpcodeOp1BaseFpClaimImpl,
+    InteractionClaimImpl as CallOpcodeOp1BaseFpInteractionClaimImpl,
+};
+use components::call_opcode_rel::{
     ClaimImpl as CallOpcodeRelClaimImpl, InteractionClaimImpl as CallOpcodeRelInteractionClaimImpl,
 };
 use components::cube_252::{
@@ -2174,7 +2178,8 @@ pub struct OpcodeInteractionClaim {
     assert_eq_double_deref: Array<components::assert_eq_opcode_double_deref::InteractionClaim>,
     blake: Array<components::blake_compress_opcode::InteractionClaim>,
     call: Array<components::call_opcode::InteractionClaim>,
-    call_rel_imm: Array<components::call_opcode_rel_imm::InteractionClaim>,
+    call_op_1_base_fp: Array<components::call_opcode_op_1_base_fp::InteractionClaim>,
+    call_rel: Array<components::call_opcode_rel::InteractionClaim>,
     generic: Array<components::generic_opcode::InteractionClaim>,
     jnz: Array<components::jnz_opcode::InteractionClaim>,
     jnz_taken: Array<components::jnz_opcode_taken::InteractionClaim>,
@@ -2223,7 +2228,11 @@ impl OpcodeInteractionClaimImpl of OpcodeInteractionClaimTrait {
             interaction_claim.mix_into(ref channel);
         }
 
-        for interaction_claim in self.call_rel_imm.span() {
+        for interaction_claim in self.call_op_1_base_fp.span() {
+            interaction_claim.mix_into(ref channel);
+        }
+
+        for interaction_claim in self.call_rel.span() {
             interaction_claim.mix_into(ref channel);
         }
 
@@ -2307,7 +2316,11 @@ impl OpcodeInteractionClaimImpl of OpcodeInteractionClaimTrait {
             sum += *interaction_claim.claimed_sum;
         }
 
-        for interaction_claim in self.call_rel_imm.span() {
+        for interaction_claim in self.call_op_1_base_fp.span() {
+            sum += *interaction_claim.claimed_sum;
+        }
+
+        for interaction_claim in self.call_rel.span() {
             sum += *interaction_claim.claimed_sum;
         }
 
@@ -2686,7 +2699,8 @@ pub struct OpcodeClaim {
     pub assert_eq_double_deref: Array<components::assert_eq_opcode_double_deref::Claim>,
     pub blake: Array<components::blake_compress_opcode::Claim>,
     pub call: Array<components::call_opcode::Claim>,
-    pub call_rel_imm: Array<components::call_opcode_rel_imm::Claim>,
+    pub call_op_1_base_fp: Array<components::call_opcode_op_1_base_fp::Claim>,
+    pub call_rel: Array<components::call_opcode_rel::Claim>,
     pub generic: Array<components::generic_opcode::Claim>,
     pub jnz: Array<components::jnz_opcode::Claim>,
     pub jnz_taken: Array<components::jnz_opcode_taken::Claim>,
@@ -2743,8 +2757,13 @@ impl OpcodeClaimImpl of OpcodeClaimTrait {
             claim.mix_into(ref channel);
         }
 
-        channel.mix_u64(self.call_rel_imm.len().into());
-        for claim in self.call_rel_imm.span() {
+        channel.mix_u64(self.call_op_1_base_fp.len().into());
+        for claim in self.call_op_1_base_fp.span() {
+            claim.mix_into(ref channel);
+        }
+
+        channel.mix_u64(self.call_rel.len().into());
+        for claim in self.call_rel.span() {
             claim.mix_into(ref channel);
         }
 
@@ -2839,7 +2858,11 @@ impl OpcodeClaimImpl of OpcodeClaimTrait {
             log_sizes.append(claim.log_sizes());
         }
 
-        for claim in self.call_rel_imm.span() {
+        for claim in self.call_op_1_base_fp.span() {
+            log_sizes.append(claim.log_sizes());
+        }
+
+        for claim in self.call_rel.span() {
             log_sizes.append(claim.log_sizes());
         }
 
@@ -2900,7 +2923,8 @@ impl OpcodeClaimImpl of OpcodeClaimTrait {
             assert_eq_double_deref,
             blake,
             call,
-            call_rel_imm,
+            call_op_1_base_fp,
+            call_rel,
             generic,
             jnz,
             jnz_taken,
@@ -2977,10 +3001,18 @@ impl OpcodeClaimImpl of OpcodeClaimTrait {
             );
         }
 
-        for claim in call_rel_imm.span() {
+        for claim in call_op_1_base_fp.span() {
             accumulate_relation_uses(
                 ref relation_uses,
-                components::call_opcode_rel_imm::RELATION_USES_PER_ROW.span(),
+                components::call_opcode_op_1_base_fp::RELATION_USES_PER_ROW.span(),
+                *claim.log_size,
+            );
+        }
+
+        for claim in call_rel.span() {
+            accumulate_relation_uses(
+                ref relation_uses,
+                components::call_opcode_rel::RELATION_USES_PER_ROW.span(),
                 *claim.log_size,
             );
         }
@@ -6228,7 +6260,8 @@ pub struct OpcodeComponents {
     assert_eq_double_deref: Array<components::assert_eq_opcode_double_deref::Component>,
     blake: Array<components::blake_compress_opcode::Component>,
     call: Array<components::call_opcode::Component>,
-    call_rel_imm: Array<components::call_opcode_rel_imm::Component>,
+    call_op_1_base_fp: Array<components::call_opcode_op_1_base_fp::Component>,
+    call_rel: Array<components::call_opcode_rel::Component>,
     generic: Array<components::generic_opcode::Component>,
     jnz: Array<components::jnz_opcode::Component>,
     jnz_taken: Array<components::jnz_opcode_taken::Component>,
@@ -6505,15 +6538,18 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
         assert!(call_claims.is_empty());
         assert!(call_interaction_claims.is_empty());
 
-        // Call Rel_imm components
-        let mut call_rel_imm_components = array![];
-        let mut call_rel_imm_claims = claim.call_rel_imm.span();
-        let mut call_rel_imm_interaction_claims = interaction_claim.call_rel_imm.span();
+        // Call Op1 Base FP components
+        let mut call_op_1_base_fp_components = array![];
+        let mut call_op_1_base_fp_claims = claim.call_op_1_base_fp.span();
+        let mut call_op_1_base_fp_interaction_claims = interaction_claim.call_op_1_base_fp.span();
         while let (Option::Some(claim), Option::Some(interaction_claim)) =
-            (call_rel_imm_claims.pop_front(), call_rel_imm_interaction_claims.pop_front()) {
-            call_rel_imm_components
+            (
+                call_op_1_base_fp_claims.pop_front(),
+                call_op_1_base_fp_interaction_claims.pop_front(),
+            ) {
+            call_op_1_base_fp_components
                 .append(
-                    components::call_opcode_rel_imm::Component {
+                    components::call_opcode_op_1_base_fp::Component {
                         claim: *claim,
                         interaction_claim: *interaction_claim,
                         memory_address_to_id_lookup_elements: interaction_elements
@@ -6529,8 +6565,35 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
                     },
                 );
         }
-        assert!(call_rel_imm_claims.is_empty());
-        assert!(call_rel_imm_interaction_claims.is_empty());
+        assert!(call_op_1_base_fp_claims.is_empty());
+        assert!(call_op_1_base_fp_interaction_claims.is_empty());
+
+        // Call Rel components
+        let mut call_rel_components = array![];
+        let mut call_rel_claims = claim.call_rel.span();
+        let mut call_rel_interaction_claims = interaction_claim.call_rel.span();
+        while let (Option::Some(claim), Option::Some(interaction_claim)) =
+            (call_rel_claims.pop_front(), call_rel_interaction_claims.pop_front()) {
+            call_rel_components
+                .append(
+                    components::call_opcode_rel::Component {
+                        claim: *claim,
+                        interaction_claim: *interaction_claim,
+                        memory_address_to_id_lookup_elements: interaction_elements
+                            .memory_address_to_id
+                            .clone(),
+                        memory_id_to_big_lookup_elements: interaction_elements
+                            .memory_id_to_value
+                            .clone(),
+                        opcodes_lookup_elements: interaction_elements.opcodes.clone(),
+                        verify_instruction_lookup_elements: interaction_elements
+                            .verify_instruction
+                            .clone(),
+                    },
+                );
+        }
+        assert!(call_rel_claims.is_empty());
+        assert!(call_rel_interaction_claims.is_empty());
 
         // Generic components
         let mut generic_components = array![];
@@ -6945,7 +7008,8 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
             assert_eq_double_deref: assert_eq_double_deref_components,
             blake: blake_components,
             call: call_components,
-            call_rel_imm: call_rel_imm_components,
+            call_op_1_base_fp: call_op_1_base_fp_components,
+            call_rel: call_rel_components,
             generic: generic_components,
             jnz: jnz_components,
             jnz_taken: jnz_taken_components,
@@ -7047,7 +7111,17 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
                 );
         }
 
-        for component in self.call_rel_imm.span() {
+        for component in self.call_op_1_base_fp.span() {
+            component
+                .mask_points(
+                    ref preprocessed_column_set,
+                    ref trace_mask_points,
+                    ref interaction_trace_mask_points,
+                    point,
+                );
+        }
+
+        for component in self.call_rel.span() {
             component
                 .mask_points(
                     ref preprocessed_column_set,
@@ -7203,7 +7277,11 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
             max_degree = core::cmp::max(max_degree, component.max_constraint_log_degree_bound());
         }
 
-        for component in self.call_rel_imm.span() {
+        for component in self.call_op_1_base_fp.span() {
+            max_degree = core::cmp::max(max_degree, component.max_constraint_log_degree_bound());
+        }
+
+        for component in self.call_rel.span() {
             max_degree = core::cmp::max(max_degree, component.max_constraint_log_degree_bound());
         }
 
@@ -7354,7 +7432,7 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
                 );
         }
 
-        for component in self.call_rel_imm.span() {
+        for component in self.call_op_1_base_fp.span() {
             component
                 .evaluate_constraints_at_point(
                     ref sum,
@@ -7365,7 +7443,17 @@ impl OpcodeComponentsImpl of OpcodeComponentsTrait {
                     point,
                 );
         }
-
+        for component in self.call_rel.span() {
+            component
+                .evaluate_constraints_at_point(
+                    ref sum,
+                    ref preprocessed_mask_values,
+                    ref trace_mask_values,
+                    ref interaction_trace_mask_values,
+                    random_coeff,
+                    point,
+                );
+        }
         for component in self.generic.span() {
             component
                 .evaluate_constraints_at_point(

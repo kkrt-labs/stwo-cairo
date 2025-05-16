@@ -1,6 +1,6 @@
 // AIR version 9f50a80b
 #![allow(unused_parens)]
-use cairo_air::components::call_opcode_rel_imm::{Claim, InteractionClaim, N_TRACE_COLUMNS};
+use cairo_air::components::call_opcode_rel::{Claim, InteractionClaim, N_TRACE_COLUMNS};
 
 use crate::witness::components::{memory_address_to_id, memory_id_to_big, verify_instruction};
 use crate::witness::prelude::*;
@@ -125,15 +125,12 @@ fn write_trace_simd(
         .into_par_iter()
         .enumerate()
         .for_each(
-            |(
-                row_index,
-                (mut row, lookup_data, sub_component_inputs, call_opcode_rel_imm_input),
-            )| {
-                let input_pc_col0 = call_opcode_rel_imm_input.pc;
+            |(row_index, (mut row, lookup_data, sub_component_inputs, call_opcode_rel_input))| {
+                let input_pc_col0 = call_opcode_rel_input.pc;
                 *row[0] = input_pc_col0;
-                let input_ap_col1 = call_opcode_rel_imm_input.ap;
+                let input_ap_col1 = call_opcode_rel_input.ap;
                 *row[1] = input_ap_col1;
-                let input_fp_col2 = call_opcode_rel_imm_input.fp;
+                let input_fp_col2 = call_opcode_rel_input.fp;
                 *row[2] = input_fp_col2;
 
                 // Decode Instruction.
@@ -156,7 +153,7 @@ fn write_trace_simd(
                     M31_68,
                     M31_0,
                 ];
-                let decode_instruction_2a7a2_output_tmp_9db06_2 = (
+                let decode_instruction_cf6b21f82dbfb23d_output_tmp_4997f_2 = (
                     [M31_0, M31_1, M31_1],
                     [
                         M31_0, M31_0, M31_1, M31_0, M31_0, M31_0, M31_0, M31_0, M31_1, M31_0,
@@ -226,7 +223,7 @@ fn write_trace_simd(
                     M31_0,
                     M31_0,
                 ];
-                let read_positive_num_bits_27_output_tmp_9db06_5 = (
+                let read_positive_num_bits_27_output_tmp_4997f_5 = (
                     PackedFelt252::from_limbs([
                         stored_fp_limb_0_col4,
                         stored_fp_limb_1_col5,
@@ -273,7 +270,6 @@ fn write_trace_simd(
                 *lookup_data.memory_address_to_id_1 =
                     [M31_1, ((input_ap_col1) + (M31_1)), stored_ret_pc_id_col7];
                 let stored_ret_pc_limb_0_col8 = memory_id_to_big_value_tmp_9db06_7.get_m31(0);
-
                 *row[8] = stored_ret_pc_limb_0_col8;
                 let stored_ret_pc_limb_1_col9 = memory_id_to_big_value_tmp_9db06_7.get_m31(1);
                 *row[9] = stored_ret_pc_limb_1_col9;
@@ -311,7 +307,7 @@ fn write_trace_simd(
                     M31_0,
                     M31_0,
                 ];
-                let read_positive_num_bits_27_output_tmp_9db06_8 = (
+                let read_positive_num_bits_27_output_tmp_4997f_8 = (
                     PackedFelt252::from_limbs([
                         stored_ret_pc_limb_0_col8,
                         stored_ret_pc_limb_1_col9,
@@ -364,14 +360,14 @@ fn write_trace_simd(
 
                 // Cond Decode Small Sign.
 
-                let msb_tmp_9db06_11 = memory_id_to_big_value_tmp_9db06_10.get_m31(27).eq(M31_256);
-                let msb_col12 = msb_tmp_9db06_11.as_m31();
+                let msb_tmp_4997f_11 = memory_id_to_big_value_tmp_9db06_10.get_m31(27).eq(M31_256);
+                let msb_col12 = msb_tmp_4997f_11.as_m31();
                 *row[12] = msb_col12;
-                let mid_limbs_set_tmp_9db06_12 =
+                let mid_limbs_set_tmp_4997f_12 =
                     memory_id_to_big_value_tmp_9db06_10.get_m31(20).eq(M31_511);
-                let mid_limbs_set_col13 = mid_limbs_set_tmp_9db06_12.as_m31();
+                let mid_limbs_set_col13 = mid_limbs_set_tmp_4997f_12.as_m31();
                 *row[13] = mid_limbs_set_col13;
-                let cond_decode_small_sign_output_tmp_9db06_13 = [msb_col12, mid_limbs_set_col13];
+                let cond_decode_small_sign_output_tmp_4997f_13 = [msb_col12, mid_limbs_set_col13];
 
                 let distance_to_next_pc_limb_0_col14 =
                     memory_id_to_big_value_tmp_9db06_10.get_m31(0);
@@ -414,7 +410,7 @@ fn write_trace_simd(
                     M31_0,
                     ((msb_col12) * (M31_256)),
                 ];
-                let read_small_output_tmp_9db06_14 = (
+                let read_small_output_tmp_4997f_14 = (
                     (((((distance_to_next_pc_limb_0_col14)
                         + ((distance_to_next_pc_limb_1_col15) * (M31_512)))
                         + ((distance_to_next_pc_limb_2_col16) * (M31_262144)))
@@ -425,7 +421,7 @@ fn write_trace_simd(
 
                 *lookup_data.opcodes_0 = [input_pc_col0, input_ap_col1, input_fp_col2];
                 *lookup_data.opcodes_1 = [
-                    ((input_pc_col0) + (read_small_output_tmp_9db06_14.0)),
+                    ((input_pc_col0) + (read_small_output_tmp_4997f_14.0)),
                     ((input_ap_col1) + (M31_2)),
                     ((input_ap_col1) + (M31_2)),
                 ];

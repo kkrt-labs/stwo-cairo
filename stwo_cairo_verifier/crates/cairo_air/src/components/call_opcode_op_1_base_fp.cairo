@@ -16,8 +16,9 @@ use stwo_verifier_core::poly::circle::CanonicCosetImpl;
 use stwo_verifier_core::utils::{ArrayImpl, pow2};
 use stwo_verifier_core::{ColumnArray, ColumnSpan, TreeArray};
 use crate::components::CairoComponent;
-use crate::components::subroutines::decode_instruction_fdb6e::decode_instruction_fdb6e_evaluate;
+use crate::components::subroutines::decode_instruction_ea769::decode_instruction_ea769_evaluate;
 use crate::components::subroutines::read_positive_num_bits_27::read_positive_num_bits_27_evaluate;
+use crate::utils::U32Impl;
 
 pub const N_TRACE_COLUMNS: usize = 17;
 pub const RELATION_USES_PER_ROW: [(felt252, u32); 4] = [
@@ -204,7 +205,7 @@ pub impl ComponentImpl of CairoComponent<Component> {
         let constraint_quotient = (enabler * enabler - enabler) * domain_vanishing_eval_inv;
         sum = sum * random_coeff + constraint_quotient;
 
-        let output: [QM31; 1] = decode_instruction_fdb6e_evaluate(
+        let output: [QM31; 1] = decode_instruction_ea769_evaluate(
             [input_pc_col0],
             offset2_col3,
             self.verify_instruction_lookup_elements,
@@ -213,7 +214,7 @@ pub impl ComponentImpl of CairoComponent<Component> {
             domain_vanishing_eval_inv,
             random_coeff,
         );
-        let [decode_instruction_fdb6e_output_tmp_32b66_3_offset2] = output;
+        let [decode_instruction_ea769_output_tmp_6d870_3_offset2] = output;
 
         read_positive_num_bits_27_evaluate(
             [input_ap_col1],
@@ -262,7 +263,7 @@ pub impl ComponentImpl of CairoComponent<Component> {
         sum = sum * random_coeff + constraint_quotient;
 
         read_positive_num_bits_27_evaluate(
-            [(input_ap_col1 + decode_instruction_fdb6e_output_tmp_32b66_3_offset2)],
+            [(input_fp_col2 + decode_instruction_ea769_output_tmp_6d870_3_offset2)],
             next_pc_id_col12,
             next_pc_limb_0_col13,
             next_pc_limb_1_col14,
