@@ -21,6 +21,7 @@ use stwo_prover::core::backend::{Col, Column};
 use stwo_prover::core::fields::m31::{BaseField, M31};
 use stwo_prover::core::poly::circle::{CanonicCoset, CircleEvaluation};
 use stwo_prover::core::poly::BitReversedOrder;
+use num_traits::Zero;
 
 pub type InputType = M31;
 pub type PackedInputType = PackedM31;
@@ -174,7 +175,7 @@ impl ClaimGenerator {
         let multiplicities = self.multiplicities.into_simd_vec();
 
         let size = std::cmp::max(
-            ((multiplicities.len() * N_LANES).div_ceil(MEMORY_ADDRESS_TO_ID_SPLIT))
+            ((multiplicities.iter().filter(|f| !f.is_zero()).count() * N_LANES).div_ceil(MEMORY_ADDRESS_TO_ID_SPLIT))
                 .next_power_of_two(),
             N_LANES,
         );
@@ -199,7 +200,7 @@ impl ClaimGenerator {
             .map(|&chunk| unsafe { PackedM31::from_simd_unchecked(Simd::from_array(chunk)) });
 
         for (i, (id_packed, multiplicity_packed, segment_id_packed, offset_packed)) in
-            izip!(id_it, multiplicities, segment_ids, offsets).enumerate()
+            izip!(id_it, multiplicities, segment_ids, offsets).filter(|(_, m, _, _)| !m.is_zero()).enumerate()
         {
             let chunk_idx_trace = i / n_packed_rows;
             let i_row_in_chunk = i % n_packed_rows;
