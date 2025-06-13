@@ -195,6 +195,7 @@ pub mod tests {
         use cairo_air::PreProcessedTraceVariant;
         use stwo_cairo_serialize::CairoSerialize;
         use stwo_prover::core::pcs::PcsConfig;
+        use stwo_prover::core::vcs::poseidon252_merkle::Poseidon252MerkleChannel;
         use test_log::test;
 
         use super::*;
