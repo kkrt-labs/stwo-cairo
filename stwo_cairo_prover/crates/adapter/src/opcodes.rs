@@ -9,7 +9,7 @@ use tracing::{span, Level};
 
 use super::decode::{Instruction, OpcodeExtension};
 use super::memory::{MemoryBuilder, MemoryValue};
-use crate::memory::limbs_to_u128;
+// use super::vm_import::RelocatedTraceEntry;
 use cairo_vm::vm::trace::trace_entry::TraceEntry;
 
 // Small mul operands are 36 bits.
@@ -125,19 +125,6 @@ impl CasmStatesByOpcode {
                     (!op_1_imm) || offset2 == 1,
                     "add_ap opcode requires that if op_1_imm is true, offset2 must be 1"
                 );
-                let op_1 = if op_1_imm {
-                    memory.get(Relocatable::program(pc.0.checked_add_signed(offset2 as i32).unwrap()))
-                } else if op_1_base_fp {
-                    memory.get(Relocatable::execution(fp.0.checked_add_signed(offset2 as i32).unwrap()))
-                } else {
-                    memory.get(Relocatable::execution(ap.0.checked_add_signed(offset2 as i32).unwrap()))
-                };
-                // next ap = ap + op1 must be in the range [0, 2^27 - 1].
-                if !is_within_range(op_1, -(ap.0 as i128), ((1 << 27) - 1) - ap.0 as i128) {
-                    panic!(
-                        "add_ap opcode requires that next_ap is within the range of [0, 2^27 - 1]"
-                    );
-                }
                 self.add_ap_opcode.push(state);
             }
             // jump.
@@ -268,7 +255,7 @@ impl CasmStatesByOpcode {
                 let dst_addr = if dst_base_fp { fp } else { ap };
                 let offset = dst_addr.0.checked_add_signed(offset0 as i32).unwrap();
                 let dst = memory.get(Relocatable::execution(offset));
-                let taken = !dst.is_zero();
+                let taken = dst != MemoryValue::Small(0);
                 if taken {
                     self.jnz_opcode_taken.push(state);
                 } else {
@@ -675,18 +662,7 @@ impl StateTransitions {
 }
 
 fn is_within_range(val: MemoryValue, min: i128, max: i128) -> bool {
-    match val {
-        MemoryValue::Small(val) => (val as i128 >= min) && (val as i128 <= max),
-        MemoryValue::F252(felt252) if felt252[4..8] == [0; 4] => {
-            let val = limbs_to_u128(felt252[0..4].try_into().unwrap());
-            (val as i128 >= min) && (val as i128 <= max)
-        }
-        MemoryValue::F252(_) => false,
-        MemoryValue::MemoryRelocatable(relocatable) => {
-            let val = relocatable[1] as i128;
-            (val as i128 >= min) && (val as i128 <= max)
-        }
-    }
+    matches!(val, MemoryValue::Small(val) if (val as i128 >= min) && (val as i128 <= max))
 }
 
 // Returns 'true' the multiplication factors are in the range [0, 2^36-1].

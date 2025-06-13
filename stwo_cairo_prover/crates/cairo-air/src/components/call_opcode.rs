@@ -3,7 +3,7 @@ use crate::components::subroutines::decode_instruction_fdb6e::DecodeInstructionF
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
 use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
 
-pub const N_TRACE_COLUMNS: usize = 24;
+pub const N_TRACE_COLUMNS: usize = 22;
 pub const RELATION_USES_PER_ROW: [RelationUse; 4] = [
     RelationUse {
         relation_id: "MemoryAddressToId",
