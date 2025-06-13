@@ -165,8 +165,8 @@ impl ClaimGenerator {
         let small_table_trace =
             gen_small_memory_trace(self.small_values, self.small_mults.into_simd_vec());
         let relocatable_table_trace = gen_relocatable_memory_trace(
-            self.relocatable_values,
-            self.relocatable_mults.into_simd_vec(),
+            &self.relocatable_values,
+            &self.relocatable_mults.into_simd_vec(),
         );
 
         // Lookup data.
@@ -439,11 +439,18 @@ fn gen_small_memory_trace(values: Vec<u128>, mut mults: Vec<PackedM31>) -> Vec<B
     chain!(values_trace, [multiplicities]).collect_vec()
 }
 
-fn gen_relocatable_memory_trace(values: Vec<[u32; 2]>, mults: Vec<PackedM31>) -> Vec<BaseColumn> {
-    let column_length = values.len();
+fn gen_relocatable_memory_trace(values: &Vec<[u32; 2]>, mults: &Vec<PackedM31>) -> Vec<BaseColumn> {
+    assert_eq!(values.len(), mults.len() * N_LANES);
+    let column_length = values.len().next_power_of_two();
+
+    let mut mults = mults.to_vec();
+    mults.resize(column_length / N_LANES, PackedM31::zero());
+    let multiplicities = BaseColumn::from_simd(mults);
 
     let packed_values: Vec<[Simd<u32, N_LANES>; 2]> = values
         .into_iter()
+        .chain(std::iter::repeat(&[0; 2]))
+        .take(column_length)
         .array_chunks::<N_LANES>()
         .map(|chunk| {
             std::array::from_fn(|i| Simd::from_array(std::array::from_fn(|j| chunk[j][i])))
@@ -469,8 +476,6 @@ fn gen_relocatable_memory_trace(values: Vec<[u32; 2]>, mults: Vec<PackedM31>) ->
             values_trace[j].data[i] = *value;
         }
     }
-
-    let multiplicities = BaseColumn::from_simd(mults);
 
     chain!(values_trace, [multiplicities]).collect_vec()
 }

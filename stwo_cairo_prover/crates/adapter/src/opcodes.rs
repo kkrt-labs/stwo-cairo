@@ -673,7 +673,10 @@ fn is_within_range(val: MemoryValue, min: i128, max: i128) -> bool {
             (val as i128 >= min) && (val as i128 <= max)
         }
         MemoryValue::F252(_) => false,
-        MemoryValue::MemoryRelocatable(_) => panic!("MemoryRelocatable is not supported in is_within_range"),
+        MemoryValue::MemoryRelocatable(relocatable) => {
+            let val = relocatable[1] as i128;
+            (val as i128 >= min) && (val as i128 <= max)
+        }
     }
 }
 
