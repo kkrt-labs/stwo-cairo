@@ -459,7 +459,7 @@ impl InteractionClaim {
     }
 
     pub fn claimed_sum(&self) -> SecureField {
-        self.small_claimed_sum + self.big_claimed_sums.iter().sum::<SecureField>()
+        self.small_claimed_sum + self.big_claimed_sums.iter().sum::<SecureField>() + self.relocatable_claimed_sum
     }
 }
 
