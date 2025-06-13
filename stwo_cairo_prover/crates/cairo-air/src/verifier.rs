@@ -1,4 +1,4 @@
-use num_traits::Zero;
+use num_traits::{One, Zero};
 use paste::paste;
 use serde_json::to_string_pretty;
 use stwo_cairo_adapter::builtins::{
@@ -52,16 +52,16 @@ fn verify_claim(claim: &CairoClaim) {
 
     verify_program(program, public_segments);
 
-    assert_eq!(*initial_pc, BaseField::zero());
+    assert_eq!(*initial_pc, BaseField::one());
     assert!(
-        *initial_pc + BaseField::from(2) <= *initial_ap,
+        *initial_pc + BaseField::from(2) < *initial_ap,
         "Initial pc + 2 must be less than initial ap, but got initial_pc: {}, initial_ap: {}",
         initial_pc,
         initial_ap
     );
     assert_eq!(initial_fp, final_fp);
     assert_eq!(initial_fp, initial_ap);
-    assert_eq!(*final_pc, BaseField::from(4));
+    assert_eq!(*final_pc, BaseField::from(5));
     assert!(initial_ap <= final_ap);
 
     // Assert that each relation has strictly less than P uses.
@@ -127,22 +127,28 @@ fn verify_builtins(builtins_claim: &BuiltinsClaim, segment_ranges: &PublicSegmen
         mul_mod,
     } = *segment_ranges;
     // Check that non-supported builtins aren't used.
-    assert_eq!(
-        segment_ranges.ec_op.unwrap().start_ptr.offset,
-        segment_ranges.ec_op.unwrap().stop_ptr.offset
-    );
-    assert_eq!(
-        segment_ranges.ecdsa.unwrap().start_ptr.offset,
-        segment_ranges.ecdsa.unwrap().stop_ptr.offset
-    );
-    assert_eq!(
-        segment_ranges.keccak.unwrap().start_ptr.offset,
-        segment_ranges.keccak.unwrap().stop_ptr.offset
-    );
+    if let Some(ecdsa) = ecdsa {
+        assert_eq!(
+            ecdsa.start_ptr.offset, ecdsa.stop_ptr.offset,
+            "ECDSA segment is not empty"
+        );
+    }
+    if let Some(keccak) = keccak {
+        assert_eq!(
+            keccak.start_ptr.offset, keccak.stop_ptr.offset,
+            "Keccak segment is not empty"
+        );
+    }
+    if let Some(ec_op) = ec_op {
+        assert_eq!(
+            ec_op.start_ptr.offset, ec_op.stop_ptr.offset,
+            "EC_OP segment is not empty"
+        );
+    }
 
     // Output builtin.
-    assert!(segment_ranges.output.stop_ptr.offset < 1 << 31);
-    assert!(segment_ranges.output.start_ptr.offset <= segment_ranges.output.stop_ptr.offset);
+    assert!(output.stop_ptr.offset < 1 << 31);
+    assert!(output.start_ptr.offset <= output.stop_ptr.offset);
 
     // Macro for calling `check_builtin` on all builtins except both range_check builtins.
     macro_rules! check_builtin_generic {

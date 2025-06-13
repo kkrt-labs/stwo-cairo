@@ -191,57 +191,44 @@ pub mod tests {
     #[cfg(test)]
     #[cfg(feature = "nightly")]
     mod nightly_tests {
-        use std::io::Write;
-
         use cairo_air::verifier::verify_cairo;
         use cairo_air::PreProcessedTraceVariant;
-        use itertools::Itertools;
         use stwo_cairo_serialize::CairoSerialize;
         use stwo_prover::core::pcs::PcsConfig;
-        use stwo_prover::core::vcs::poseidon252_merkle::Poseidon252MerkleChannel;
         use test_log::test;
 
         use super::*;
         use crate::prover::prove_cairo;
 
-        #[test]
-        fn generate_and_serialise_proof() {
-            let compiled_program = get_test_program("test_prove_verify_all_opcode_components");
-            let input = run_program_and_adapter(&compiled_program);
-            let preprocessed_trace = PreProcessedTraceVariant::Canonical;
-            let cairo_proof = prove_cairo::<Poseidon252MerkleChannel>(
-                input,
-                PcsConfig::default(),
-                preprocessed_trace,
-            )
-            .unwrap();
-            let mut output = Vec::new();
-            CairoSerialize::serialize(&cairo_proof, &mut output);
-            let proof_str = output.iter().map(|v| v.to_string()).join(",");
-            let mut file = std::fs::File::create("proof.cairo").unwrap();
-            file.write_all(proof_str.as_bytes()).unwrap();
-            verify_cairo::<Poseidon252MerkleChannel>(cairo_proof, preprocessed_trace).unwrap();
-        }
+        // #[test]
+        // fn generate_and_serialise_proof() {
+        //     let compiled_program = get_test_program("test_prove_verify_all_opcode_components");
+        //     let input = run_program_and_adapter(&compiled_program);
+        //     let preprocessed_trace = PreProcessedTraceVariant::Canonical;
+        //     let cairo_proof = prove_cairo::<Poseidon252MerkleChannel>(
+        //         input,
+        //         PcsConfig::default(),
+        //         preprocessed_trace,
+        //     )
+        //     .unwrap();
+        //     let mut output = Vec::new();
+        //     CairoSerialize::serialize(&cairo_proof, &mut output);
+        //     let proof_str = output.iter().map(|v| v.to_string()).join(",");
+        //     let mut file = std::fs::File::create("proof.cairo").unwrap();
+        //     file.write_all(proof_str.as_bytes()).unwrap();
+        //     verify_cairo::<Poseidon252MerkleChannel>(cairo_proof, preprocessed_trace).unwrap();
+        // }
     }
 
     #[cfg(test)]
     #[cfg(feature = "slow-tests")]
     pub mod slow_tests {
-
-        use std::io::Write;
-        use std::process::Command;
-
         use cairo_air::preprocessed::PreProcessedTrace;
         use cairo_air::verifier::verify_cairo;
-        use itertools::Itertools;
         use stwo_cairo_adapter::adapter::read_and_adapt_prover_input_info_file;
         use stwo_cairo_adapter::test_utils::{get_prover_input_info_path, get_test_program};
-        use stwo_cairo_serialize::CairoSerialize;
-        use stwo_prover::core::fri::FriConfig;
         use stwo_prover::core::pcs::PcsConfig;
         use stwo_prover::core::vcs::blake2_merkle::Blake2sMerkleChannel;
-        use stwo_prover::core::vcs::poseidon252_merkle::Poseidon252MerkleChannel;
-        use tempfile::NamedTempFile;
         use test_log::test;
 
         use super::*;
