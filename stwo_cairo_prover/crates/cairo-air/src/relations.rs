@@ -2,10 +2,10 @@
 use stwo_prover::relation;
 
 relation!(BlakeG, 20);
-relation!(BlakeRound, 35);
+relation!(BlakeRound, 36);
 relation!(BlakeRoundSigma, 17);
 relation!(Cube252, 20);
-relation!(MemoryAddressToId, 2);
+relation!(MemoryAddressToId, 3);
 relation!(MemoryIdToBig, 29);
 relation!(Opcodes, 3);
 relation!(PartialEcMul, 73);

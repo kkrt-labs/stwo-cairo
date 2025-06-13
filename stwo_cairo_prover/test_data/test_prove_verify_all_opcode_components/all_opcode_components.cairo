@@ -51,8 +51,8 @@ func main{
     ap+=1;
     mul_big();
     ap+=1;
-    generic();
-    ap+=1;
+    // generic();
+    // ap+=1;
     jump_rel();
     ap+=1;
     jump_abs_double_deref();

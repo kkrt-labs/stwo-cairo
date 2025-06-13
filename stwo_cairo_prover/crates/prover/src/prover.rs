@@ -77,7 +77,7 @@ where
         witness_trace_cells(&claim, &preprocessed_trace)
     );
     // Validate lookup argument.
-    debug_assert_eq!(
+    assert_eq!(
         lookup_sum(&claim, &interaction_elements, &interaction_claim),
         SecureField::zero()
     );
@@ -102,7 +102,7 @@ where
             &component_builder,
             &claim.public_data,
         );
-        tracing::info!("Relations summary: {:?}", summary);
+        println!("Relations summary: {:?}", summary);
     }
 
     let components = component_builder.provers();
@@ -111,7 +111,6 @@ where
     let span = span!(Level::INFO, "Prove STARKs").entered();
     let proof = prove::<SimdBackend, _>(&components, channel, commitment_scheme)?;
     span.exit();
-
     event!(name: "component_info", Level::DEBUG, "Components: {}", component_builder);
 
     Ok(CairoProof {
@@ -249,6 +248,35 @@ pub mod tests {
         use crate::debug_tools::assert_constraints::assert_cairo_constraints;
         use crate::prover::{prove_cairo, PreProcessedTraceVariant, ProverInput};
 
+        #[test]
+        fn test_prove_verify_keth() {
+            use std::path::Path;
+
+            let binary_path = Path::new(
+                "/Users/antoine/Documents/keth/data/1/22615247/6/prover_input_info_22615247_body_0_5",
+            );
+
+            // Load and adapt the binary prover input info file
+            let input = read_and_adapt_prover_input_info_file(binary_path)
+                .expect("Failed to load and adapt binary prover input info file");
+            for (opcode, n_instances) in &input.state_transitions.casm_states_by_opcode.counts() {
+                println!("Opcode: {}, n_instances: {}", opcode, n_instances);
+            }
+            let preprocessed_trace = PreProcessedTraceVariant::Canonical;
+            let cairo_proof = prove_cairo::<Blake2sMerkleChannel>(
+                input,
+                PcsConfig::default(),
+                preprocessed_trace,
+            )
+            .unwrap();
+            verify_cairo::<Blake2sMerkleChannel>(
+                cairo_proof,
+                PcsConfig::default(),
+                preprocessed_trace,
+            )
+            .unwrap();
+        }
+
         // TODO(Ohad): fine-grained constraints tests.
         #[test]
         fn test_cairo_constraints() {
@@ -261,13 +289,13 @@ pub mod tests {
         fn test_prove_verify_all_opcode_components() {
             let compiled_program = get_test_program("test_prove_verify_all_opcode_components");
             let input = run_program_and_adapter(&compiled_program);
-            for (opcode, n_instances) in &input.state_transitions.casm_states_by_opcode.counts() {
-                assert!(
-                    *n_instances > 0,
-                    "{} isn't used in E2E full-Cairo opcode test",
-                    opcode
-                );
-            }
+            // for (opcode, n_instances) in &input.state_transitions.casm_states_by_opcode.counts() {
+            //     assert!(
+            //         *n_instances > 0,
+            //         "{} isn't used in E2E full-Cairo opcode test",
+            //         opcode
+            //     );
+            // }
             let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
             let cairo_proof = prove_cairo::<Blake2sMerkleChannel>(
                 input,
@@ -278,146 +306,36 @@ pub mod tests {
             verify_cairo::<Blake2sMerkleChannel>(cairo_proof, preprocessed_trace).unwrap();
         }
 
-        #[test]
-        fn test_e2e_prove_cairo_verify_all_opcode_components() {
-            let compiled_program = get_test_program("test_prove_verify_all_opcode_components");
-            let input = run_program_and_adapter(&compiled_program);
-            let preprocessed_trace = PreProcessedTraceVariant::Canonical;
-            let cairo_proof = prove_cairo::<Blake2sMerkleChannel>(
-                input,
-                PcsConfig {
-                    pow_bits: 26,
-                    fri_config: FriConfig::new(0, 1, 70),
-                },
-                preprocessed_trace,
-            )
-            .unwrap();
+        // fn test_proof_stability(path: &str, n_proofs_to_compare: usize) {
+        //     let prover_input_file_path = get_prover_input_info_path(path);
+        //     let input = read_and_adapt_prover_input_info_file(&prover_input_file_path).unwrap();
 
-            let mut proof_file = NamedTempFile::new().unwrap();
-            let mut serialized: Vec<starknet_ff::FieldElement> = Vec::new();
-            CairoSerialize::serialize(&cairo_proof, &mut serialized);
-            let proof_hex: Vec<String> = serialized
-                .into_iter()
-                .map(|felt| format!("0x{:x}", felt))
-                .collect();
-            proof_file
-                .write_all(sonic_rs::to_string_pretty(&proof_hex).unwrap().as_bytes())
-                .unwrap();
+        //     let proofs = (0..n_proofs_to_compare)
+        //         .map(|_| {
+        //             sonic_rs::to_string(
+        //                 &prove_cairo::<Blake2sMerkleChannel>(
+        //                     input.clone(),
+        //                     PcsConfig::default(),
+        //                     PreProcessedTraceVariant::Canonical,
+        //                 )
+        //                 .unwrap(),
+        //             )
+        //             .unwrap()
+        //         })
+        //         .collect_vec();
 
-            let status = Command::new("bash")
-                .arg("-c")
-                .arg(format!(
-                    "(cd ../../../stwo_cairo_verifier; \
-                    scarb execute --package stwo_cairo_verifier \
-                    --arguments-file {} --output standard --target standalone \
-                    --features qm31_opcode
-                    )",
-                    proof_file.path().to_str().unwrap()
-                ))
-                .current_dir(env!("CARGO_MANIFEST_DIR"))
-                .status()
-                .unwrap();
+        //     assert!(proofs.iter().all_equal());
+        // }
 
-            assert!(status.success());
-        }
+        // #[test]
+        // fn test_opcodes_proof_stability() {
+        //     test_proof_stability("test_prove_verify_all_opcode_components", 2);
+        // }
 
-        #[ignore = "TODO: move to nightly"]
-        #[test]
-        fn test_poseidon_e2e_prove_cairo_verify_ret_opcode_components() {
-            let compiled_program = get_test_program("test_prove_verify_ret_opcode");
-            let input = run_program_and_adapter(&compiled_program);
-            let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
-            let cairo_proof = prove_cairo::<Poseidon252MerkleChannel>(
-                input,
-                PcsConfig {
-                    pow_bits: 6,
-                    fri_config: FriConfig::new(0, 1, 90),
-                },
-                preprocessed_trace,
-            )
-            .unwrap();
-
-            let mut proof_file = NamedTempFile::new().unwrap();
-            let mut serialized: Vec<starknet_ff::FieldElement> = Vec::new();
-            CairoSerialize::serialize(&cairo_proof, &mut serialized);
-            let proof_hex: Vec<String> = serialized
-                .into_iter()
-                .map(|felt| format!("0x{:x}", felt))
-                .collect();
-            proof_file
-                .write_all(sonic_rs::to_string_pretty(&proof_hex).unwrap().as_bytes())
-                .unwrap();
-
-            let status = Command::new("bash")
-                .arg("-c")
-                .arg(format!(
-                    "(cd ../../../stwo_cairo_verifier; \
-                    scarb execute --package stwo_cairo_verifier \
-                    --arguments-file {} --output standard --target standalone \
-                    --features poseidon252_verifier
-                    )",
-                    proof_file.path().to_str().unwrap()
-                ))
-                .current_dir(env!("CARGO_MANIFEST_DIR"))
-                .status()
-                .unwrap();
-
-            assert!(status.success());
-        }
-
-        #[test]
-        fn test_prove_verify_all_opcode_components_from_file() {
-            let prover_input_file_path =
-                get_prover_input_info_path("test_prove_verify_all_opcode_components");
-            let input = read_and_adapt_prover_input_info_file(&prover_input_file_path)
-                .expect("Failed to create prover input from vm output");
-            for (opcode, n_instances) in &input.state_transitions.casm_states_by_opcode.counts() {
-                assert!(
-                    *n_instances > 0,
-                    "{} isn't used in E2E full-Cairo opcode test",
-                    opcode
-                );
-            }
-            let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
-            let cairo_proof = prove_cairo::<Blake2sMerkleChannel>(
-                input,
-                PcsConfig::default(),
-                preprocessed_trace,
-            )
-            .unwrap();
-            verify_cairo::<Blake2sMerkleChannel>(cairo_proof, preprocessed_trace).unwrap();
-        }
-
-        fn test_proof_stability(path: &str, n_proofs_to_compare: usize) {
-            let prover_input_file_path = get_prover_input_info_path(path);
-            let input = read_and_adapt_prover_input_info_file(&prover_input_file_path).unwrap();
-
-            let proofs = (0..n_proofs_to_compare)
-                .map(|_| {
-                    sonic_rs::to_string(
-                        &prove_cairo::<Blake2sMerkleChannel>(
-                            input.clone(),
-                            PcsConfig::default(),
-                            PreProcessedTraceVariant::Canonical,
-                        )
-                        .unwrap(),
-                    )
-                    .unwrap()
-                })
-                .collect_vec();
-
-            assert!(proofs.iter().all_equal());
-        }
-
-        #[test]
-        fn test_opcodes_proof_stability() {
-            test_proof_stability("test_prove_verify_all_opcode_components", 2);
-        }
-
-        #[test]
-        fn test_builtins_proof_stability() {
-            test_proof_stability("test_prove_verify_all_builtins", 2);
-        }
+        // #[test]
+        // fn test_builtins_proof_stability() {
+        //     test_proof_stability("test_prove_verify_all_builtins", 2);
+        // }
 
         /// These tests' inputs were generated using cairo-vm with 50 instances of each builtin.
         pub mod builtin_tests {

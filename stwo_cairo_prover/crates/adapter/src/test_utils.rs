@@ -59,7 +59,7 @@ pub fn run_program_and_adapter(program: &[u8]) -> ProverInput {
     let cairo_run_config = CairoRunConfig {
         entrypoint: "main",
         trace_enabled: true,
-        relocate_mem: false,
+        relocate_mem: true,
         layout: LayoutName::all_cairo_stwo,
         proof_mode: true,
         secure_run: None,

@@ -1,17 +1,17 @@
 use crate::components::prelude::*;
-use crate::components::subroutines::decode_instruction_9bd86::DecodeInstruction9Bd86;
+use crate::components::subroutines::decode_instruction_ea769::DecodeInstructionEa769;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
 use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
 
-pub const N_TRACE_COLUMNS: usize = 25;
+pub const N_TRACE_COLUMNS: usize = 22;
 pub const RELATION_USES_PER_ROW: [RelationUse; 4] = [
     RelationUse {
         relation_id: "MemoryAddressToId",
-        uses: 2,
+        uses: 3,
     },
     RelationUse {
         relation_id: "MemoryIdToBig",
-        uses: 2,
+        uses: 3,
     },
     RelationUse {
         relation_id: "Opcodes",
@@ -38,7 +38,7 @@ pub struct Claim {
 impl Claim {
     pub fn log_sizes(&self) -> TreeVec<Vec<u32>> {
         let trace_log_sizes = vec![self.log_size; N_TRACE_COLUMNS];
-        let interaction_log_sizes = vec![self.log_size; SECURE_EXTENSION_DEGREE * 4];
+        let interaction_log_sizes = vec![self.log_size; SECURE_EXTENSION_DEGREE * 5];
         TreeVec::new(vec![vec![], trace_log_sizes, interaction_log_sizes])
     }
 
@@ -73,93 +73,93 @@ impl FrameworkEval for Eval {
     #[allow(non_snake_case)]
     fn evaluate<E: EvalAtRow>(&self, mut eval: E) -> E {
         let M31_1 = E::F::from(M31::from(1));
+        let M31_2 = E::F::from(M31::from(2));
         let M31_262144 = E::F::from(M31::from(262144));
         let M31_512 = E::F::from(M31::from(512));
-        let M31_shift9 = E::F::from(M31::from(1 << 9));
-        let M31_shift18 = E::F::from(M31::from(1 << 18));
-        let M31_shift27 = E::F::from(M31::from(1 << 27));
-        let M31_shift4 = E::F::from(M31::from(1 << 4));
-        let M31_shift13 = E::F::from(M31::from(1 << 13));
-        let M31_shift22 = E::F::from(M31::from(1 << 22));
-        let M31_shift31 = E::F::from(M31::from(1 << 31));
         let input_pc_col0 = eval.next_trace_mask();
         let input_ap_col1 = eval.next_trace_mask();
         let input_fp_col2 = eval.next_trace_mask();
-        let offset1_col3 = eval.next_trace_mask();
-        let offset2_col4 = eval.next_trace_mask();
-        let op0_base_fp_col5 = eval.next_trace_mask();
-        let ap_update_add_1_col6 = eval.next_trace_mask();
-        let mem0_base_col7 = eval.next_trace_mask();
-        let mem1_base_id_col8 = eval.next_trace_mask();
-        let mem1_base_limb_0_col9 = eval.next_trace_mask();
-        let mem1_base_limb_1_col10 = eval.next_trace_mask();
-        let mem1_base_limb_2_col11 = eval.next_trace_mask();
-        let mem1_base_limb_3_col12 = eval.next_trace_mask();
-        let mem1_base_limb_4_col13 = eval.next_trace_mask();
-        let mem1_base_limb_5_col14 = eval.next_trace_mask();
-        let mem1_base_limb_6_col15 = eval.next_trace_mask();
-        let mem1_base_limb_7_col16 = eval.next_trace_mask();
-        let next_pc_id_col17 = eval.next_trace_mask();
-        let next_pc_limb_0_col18 = eval.next_trace_mask();
-        let next_pc_limb_1_col19 = eval.next_trace_mask();
-        let next_pc_limb_2_col20 = eval.next_trace_mask();
+        let offset2_col3 = eval.next_trace_mask();
+        let stored_fp_id_col4 = eval.next_trace_mask();
+        let stored_fp_limb_0_col5 = eval.next_trace_mask();
+        let stored_fp_limb_1_col6 = eval.next_trace_mask();
+        let stored_fp_limb_2_col7 = eval.next_trace_mask();
+        let stored_ret_pc_id_col8 = eval.next_trace_mask();
+        let stored_ret_pc_limb_0_col9 = eval.next_trace_mask();
+        let stored_ret_pc_limb_1_col10 = eval.next_trace_mask();
+        let stored_ret_pc_limb_2_col11 = eval.next_trace_mask();
+        let next_pc_id_col12 = eval.next_trace_mask();
+        let next_pc_limb_0_col13 = eval.next_trace_mask();
+        let next_pc_limb_1_col14 = eval.next_trace_mask();
+        let next_pc_limb_2_col15 = eval.next_trace_mask();
         let enabler = eval.next_trace_mask();
-        let offset_final_word_col21 = eval.next_trace_mask();
-        let segment_id_initial_word_col22 = eval.next_trace_mask();
-        let segment_id_final_word_col23 = eval.next_trace_mask();
+        let stored_fp_limb_3_col8 = eval.next_trace_mask();
+        let stored_fp_limb_4_col9 = eval.next_trace_mask();
+        let stored_fp_limb_5_col10 = eval.next_trace_mask();
+        let stored_fp_limb_6_col11 = eval.next_trace_mask();
+        let stored_fp_limb_7_col12 = eval.next_trace_mask();
 
         eval.add_constraint(enabler.clone() * enabler.clone() - enabler.clone());
 
         #[allow(clippy::unused_unit)]
         #[allow(unused_variables)]
-        let [decode_instruction_9bd86_output_tmp_22134_6_offset1, decode_instruction_9bd86_output_tmp_22134_6_offset2] =
-            DecodeInstruction9Bd86::evaluate(
+        let [decode_instruction_ea769_output_tmp_6d870_3_offset2] =
+            DecodeInstructionEa769::evaluate(
                 [input_pc_col0.clone()],
-                offset1_col3.clone(),
-                offset2_col4.clone(),
-                op0_base_fp_col5.clone(),
-                ap_update_add_1_col6.clone(),
+                offset2_col3.clone(),
                 &self.verify_instruction_lookup_elements,
                 &mut eval,
             );
-        // mem0_base.
-        eval.add_constraint(
-            (mem0_base_col7.clone()
-                - ((op0_base_fp_col5.clone() * input_fp_col2.clone())
-                    + ((M31_1.clone() - op0_base_fp_col5.clone()) * input_ap_col1.clone()))),
-        );
         ReadPositiveNumBits72::evaluate(
             M31_1.clone(),
-            [(mem0_base_col7.clone()
-                + decode_instruction_9bd86_output_tmp_22134_6_offset1.clone())],
-            mem1_base_id_col8.clone(),
-            mem1_base_limb_0_col9.clone(),
-            mem1_base_limb_1_col10.clone(),
-            mem1_base_limb_2_col11.clone(),
-            mem1_base_limb_3_col12.clone(),
-            mem1_base_limb_4_col13.clone(),
-            mem1_base_limb_5_col14.clone(),
-            mem1_base_limb_6_col15.clone(),
-            mem1_base_limb_7_col16.clone(),
+            [input_ap_col1.clone()],
+            stored_fp_id_col4.clone(),
+            stored_fp_limb_0_col5.clone(),
+            stored_fp_limb_1_col6.clone(),
+            stored_fp_limb_2_col7.clone(),
+            stored_fp_limb_3_col8.clone(),
+            stored_fp_limb_4_col9.clone(),
+            stored_fp_limb_5_col10.clone(),
+            stored_fp_limb_6_col11.clone(),
+            stored_fp_limb_7_col12.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
         );
+        //[ap] = fp.
+        eval.add_constraint(
+            (((stored_fp_limb_0_col5.clone() + (stored_fp_limb_1_col6.clone() * M31_512.clone()))
+                + (stored_fp_limb_2_col7.clone() * M31_262144.clone()))
+                - input_fp_col2.clone()),
+        );
         ReadPositiveNumBits27::evaluate(
-            segment_id_initial_word_col22.clone()
-                + mem1_base_limb_4_col13.clone() * M31_shift4.clone()
-                + mem1_base_limb_5_col14.clone() * M31_shift13.clone()
-                + mem1_base_limb_6_col15.clone() * M31_shift22.clone()
-                + segment_id_final_word_col23.clone() * M31_shift31.clone(),
-            [mem1_base_limb_0_col9.clone()
-                + mem1_base_limb_1_col10.clone() * M31_shift9.clone()
-                + mem1_base_limb_2_col11.clone() * M31_shift18.clone()
-                + offset_final_word_col21.clone() * M31_shift27.clone()
-                + decode_instruction_9bd86_output_tmp_22134_6_offset2.clone()],
-            next_pc_id_col17.clone(),
-            next_pc_limb_0_col18.clone(),
-            next_pc_limb_1_col19.clone(),
-            next_pc_limb_2_col20.clone(),
+            M31_1.clone(),
+            [(input_ap_col1.clone() + M31_1.clone())],
+            stored_ret_pc_id_col8.clone(),
+            stored_ret_pc_limb_0_col9.clone(),
+            stored_ret_pc_limb_1_col10.clone(),
+            stored_ret_pc_limb_2_col11.clone(),
+            &self.memory_address_to_id_lookup_elements,
+            &self.memory_id_to_big_lookup_elements,
+            &mut eval,
+        );
+        //[ap+1] = return_pc.
+        eval.add_constraint(
+            (((stored_ret_pc_limb_0_col9.clone()
+                + (stored_ret_pc_limb_1_col10.clone() * M31_512.clone()))
+                + (stored_ret_pc_limb_2_col11.clone() * M31_262144.clone()))
+                - (input_pc_col0.clone() + M31_1.clone())),
+        );
+        ReadPositiveNumBits27::evaluate(
+            M31_1.clone(),
+            [
+                (input_fp_col2.clone()
+                    + decode_instruction_ea769_output_tmp_6d870_3_offset2.clone()),
+            ],
+            next_pc_id_col12.clone(),
+            next_pc_limb_0_col13.clone(),
+            next_pc_limb_1_col14.clone(),
+            next_pc_limb_2_col15.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
@@ -178,10 +178,10 @@ impl FrameworkEval for Eval {
             &self.opcodes_lookup_elements,
             -E::EF::from(enabler.clone()),
             &[
-                ((next_pc_limb_0_col18.clone() + (next_pc_limb_1_col19.clone() * M31_512.clone()))
-                    + (next_pc_limb_2_col20.clone() * M31_262144.clone())),
-                (input_ap_col1.clone() + ap_update_add_1_col6.clone()),
-                input_fp_col2.clone(),
+                ((next_pc_limb_0_col13.clone() + (next_pc_limb_1_col14.clone() * M31_512.clone()))
+                    + (next_pc_limb_2_col15.clone() * M31_262144.clone())),
+                (input_ap_col1.clone() + M31_2.clone()),
+                (input_ap_col1.clone() + M31_2.clone()),
             ],
         ));
 
@@ -199,10 +199,10 @@ mod tests {
     use stwo_prover::core::fields::qm31::QM31;
 
     use super::*;
-    use crate::components::constraints_regression_test_values::JUMP_OPCODE_DOUBLE_DEREF;
+    use crate::components::constraints_regression_test_values::CALL_OPCODE_OP_1_BASE_FP;
 
     #[test]
-    fn jump_opcode_double_deref_constraints_regression() {
+    fn call_opcode_op_1_base_fp_constraints_regression() {
         let mut rng = SmallRng::seed_from_u64(0);
         let eval = Eval {
             claim: Claim { log_size: 4 },
@@ -219,6 +219,6 @@ mod tests {
             sum += c.assign(&assignment) * rng.gen::<QM31>();
         }
 
-        assert_eq!(sum, JUMP_OPCODE_DOUBLE_DEREF);
+        assert_eq!(sum, CALL_OPCODE_OP_1_BASE_FP);
     }
 }

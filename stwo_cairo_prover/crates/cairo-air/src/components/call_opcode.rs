@@ -2,8 +2,9 @@
 use crate::components::prelude::*;
 use crate::components::subroutines::decode_instruction_f1edd::DecodeInstructionF1Edd;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
+use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
 
-pub const N_TRACE_COLUMNS: usize = 19;
+pub const N_TRACE_COLUMNS: usize = 24;
 pub const RELATION_USES_PER_ROW: [RelationUse; 4] = [
     RelationUse {
         relation_id: "MemoryAddressToId",
@@ -95,6 +96,11 @@ impl FrameworkEval for Eval {
         let next_pc_limb_1_col16 = eval.next_trace_mask();
         let next_pc_limb_2_col17 = eval.next_trace_mask();
         let enabler = eval.next_trace_mask();
+        let stored_fp_limb_3_col9 = eval.next_trace_mask();
+        let stored_fp_limb_4_col10 = eval.next_trace_mask();
+        let stored_fp_limb_5_col11 = eval.next_trace_mask();
+        let stored_fp_limb_6_col12 = eval.next_trace_mask();
+        let stored_fp_limb_7_col13 = eval.next_trace_mask();
 
         eval.add_constraint(enabler.clone() * enabler.clone() - enabler.clone());
 
@@ -108,12 +114,18 @@ impl FrameworkEval for Eval {
                 &self.verify_instruction_lookup_elements,
                 &mut eval,
             );
-        ReadPositiveNumBits27::evaluate(
+        ReadPositiveNumBits72::evaluate(
+            M31_1.clone(),
             [input_ap_col1.clone()],
             stored_fp_id_col5.clone(),
             stored_fp_limb_0_col6.clone(),
             stored_fp_limb_1_col7.clone(),
             stored_fp_limb_2_col8.clone(),
+            stored_fp_limb_3_col9.clone(),
+            stored_fp_limb_4_col10.clone(),
+            stored_fp_limb_5_col11.clone(),
+            stored_fp_limb_6_col12.clone(),
+            stored_fp_limb_7_col13.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
@@ -125,6 +137,7 @@ impl FrameworkEval for Eval {
                 - input_fp_col2.clone()),
         );
         ReadPositiveNumBits27::evaluate(
+            M31_1.clone(),
             [(input_ap_col1.clone() + M31_1.clone())],
             stored_ret_pc_id_col9.clone(),
             stored_ret_pc_limb_0_col10.clone(),
@@ -149,8 +162,11 @@ impl FrameworkEval for Eval {
                         * input_ap_col1.clone()))),
         );
         ReadPositiveNumBits27::evaluate(
-            [(mem1_base_col13.clone()
-                + decode_instruction_f1edd_output_tmp_32b66_4_offset2.clone())],
+            M31_1.clone(),
+            [
+                (input_ap_col1.clone()
+                    + decode_instruction_f1edd_output_tmp_32b66_4_offset2.clone()),
+            ],
             next_pc_id_col14.clone(),
             next_pc_limb_0_col15.clone(),
             next_pc_limb_1_col16.clone(),

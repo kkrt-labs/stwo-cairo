@@ -2,9 +2,11 @@
 use crate::components::prelude::*;
 use crate::components::subroutines::decode_instruction_2a7a2::DecodeInstruction2A7A2;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
+use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
+
 use crate::components::subroutines::read_small::ReadSmall;
 
-pub const N_TRACE_COLUMNS: usize = 18;
+pub const N_TRACE_COLUMNS: usize = 23;
 pub const RELATION_USES_PER_ROW: [RelationUse; 4] = [
     RelationUse {
         relation_id: "MemoryAddressToId",
@@ -73,6 +75,7 @@ impl FrameworkEval for Eval {
     #[allow(clippy::double_parens)]
     #[allow(non_snake_case)]
     fn evaluate<E: EvalAtRow>(&self, mut eval: E) -> E {
+        let M31_0 = E::F::from(M31::from(0));
         let M31_1 = E::F::from(M31::from(1));
         let M31_2 = E::F::from(M31::from(2));
         let M31_262144 = E::F::from(M31::from(262144));
@@ -95,6 +98,11 @@ impl FrameworkEval for Eval {
         let distance_to_next_pc_limb_1_col15 = eval.next_trace_mask();
         let distance_to_next_pc_limb_2_col16 = eval.next_trace_mask();
         let enabler = eval.next_trace_mask();
+        let stored_fp_limb_3_col7 = eval.next_trace_mask();
+        let stored_fp_limb_4_col8 = eval.next_trace_mask();
+        let stored_fp_limb_5_col9 = eval.next_trace_mask();
+        let stored_fp_limb_6_col10 = eval.next_trace_mask();
+        let stored_fp_limb_7_col11 = eval.next_trace_mask();
 
         eval.add_constraint(enabler.clone() * enabler.clone() - enabler.clone());
 
@@ -103,12 +111,18 @@ impl FrameworkEval for Eval {
             &self.verify_instruction_lookup_elements,
             &mut eval,
         );
-        ReadPositiveNumBits27::evaluate(
+        ReadPositiveNumBits72::evaluate(
+            M31_1.clone(),
             [input_ap_col1.clone()],
             stored_fp_id_col3.clone(),
             stored_fp_limb_0_col4.clone(),
             stored_fp_limb_1_col5.clone(),
             stored_fp_limb_2_col6.clone(),
+            stored_fp_limb_3_col7.clone(),
+            stored_fp_limb_4_col8.clone(),
+            stored_fp_limb_5_col9.clone(),
+            stored_fp_limb_6_col10.clone(),
+            stored_fp_limb_7_col11.clone(),
             &self.memory_address_to_id_lookup_elements,
             &self.memory_id_to_big_lookup_elements,
             &mut eval,
@@ -120,6 +134,7 @@ impl FrameworkEval for Eval {
                 - input_fp_col2.clone()),
         );
         ReadPositiveNumBits27::evaluate(
+            M31_1.clone(),
             [(input_ap_col1.clone() + M31_1.clone())],
             stored_ret_pc_id_col7.clone(),
             stored_ret_pc_limb_0_col8.clone(),
@@ -139,6 +154,7 @@ impl FrameworkEval for Eval {
         #[allow(clippy::unused_unit)]
         #[allow(unused_variables)]
         let [read_small_output_tmp_9db06_14_limb_0] = ReadSmall::evaluate(
+            M31_0.clone(),
             [(input_pc_col0.clone() + M31_1.clone())],
             distance_to_next_pc_id_col11.clone(),
             msb_col12.clone(),

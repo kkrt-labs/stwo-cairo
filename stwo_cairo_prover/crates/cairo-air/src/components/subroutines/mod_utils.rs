@@ -1,6 +1,7 @@
 use crate::components::prelude::*;
 use crate::components::subroutines::mem_cond_verify_equal_known_id::MemCondVerifyEqualKnownId;
 use crate::components::subroutines::read_positive_num_bits_27::ReadPositiveNumBits27;
+use crate::components::subroutines::read_positive_num_bits_72::ReadPositiveNumBits72;
 use crate::components::subroutines::read_positive_num_bits_99::ReadPositiveNumBits99;
 use crate::components::subroutines::read_small::ReadSmall;
 
@@ -15,7 +16,8 @@ impl ModUtils {
     #[allow(unused_variables)]
     #[allow(clippy::too_many_arguments)]
     pub fn evaluate<E: EvalAtRow>(
-        [mod_utils_input_limb_0, mod_utils_input_limb_1]: [E::F; 2],
+        segment_index: E::F,
+        mod_utils_input_limb_1: E::F,
         is_instance_0_col0: E::F,
         p0_id_col1: E::F,
         p0_limb_0_col2: E::F,
@@ -69,14 +71,32 @@ impl ModUtils {
         values_ptr_limb_0_col50: E::F,
         values_ptr_limb_1_col51: E::F,
         values_ptr_limb_2_col52: E::F,
+        values_ptr_limb_3_col252: E::F,
+        values_ptr_limb_4_col253: E::F,
+        values_ptr_limb_5_col254: E::F,
+        values_ptr_limb_6_col255: E::F,
+        values_ptr_limb_7_col256: E::F,
         offsets_ptr_id_col53: E::F,
         offsets_ptr_limb_0_col54: E::F,
         offsets_ptr_limb_1_col55: E::F,
         offsets_ptr_limb_2_col56: E::F,
+        offsets_ptr_limb_3_col257: E::F,
+        offsets_ptr_limb_4_col258: E::F,
+        offsets_ptr_limb_5_col259: E::F,
+        offsets_ptr_limb_6_col260: E::F,
+        offsets_ptr_limb_7_col261: E::F,
         offsets_ptr_prev_id_col57: E::F,
         offsets_ptr_prev_limb_0_col58: E::F,
         offsets_ptr_prev_limb_1_col59: E::F,
         offsets_ptr_prev_limb_2_col60: E::F,
+        offsets_ptr_prev_limb_3_col262: E::F,
+        offsets_ptr_prev_limb_4_col263: E::F,
+        offsets_ptr_prev_limb_5_col264: E::F,
+        offsets_ptr_prev_limb_6_col265: E::F,
+        offsets_ptr_prev_limb_7_col266: E::F,
+        prev_offsets_ptr_offset_final_word_col273: E::F,
+        prev_offsets_ptr_segment_id_initial_word_col274: E::F,
+        prev_offsets_ptr_segment_id_final_word_col275: E::F,
         n_id_col61: E::F,
         n_limb_0_col62: E::F,
         n_limb_1_col63: E::F,
@@ -90,6 +110,9 @@ impl ModUtils {
         p_prev1_id_col71: E::F,
         p_prev2_id_col72: E::F,
         p_prev3_id_col73: E::F,
+        offsets_ptr_offset_final_word_col267: E::F,
+        offsets_ptr_segment_id_initial_word_col268: E::F,
+        offsets_ptr_segment_id_final_word_col269: E::F,
         offsets_a_id_col74: E::F,
         msb_col75: E::F,
         mid_limbs_set_col76: E::F,
@@ -108,6 +131,9 @@ impl ModUtils {
         offsets_c_limb_0_col89: E::F,
         offsets_c_limb_1_col90: E::F,
         offsets_c_limb_2_col91: E::F,
+        values_ptr_offset_final_word_col270: E::F,
+        values_ptr_segment_id_initial_word_col271: E::F,
+        values_ptr_segment_id_final_word_col272: E::F,
         a0_id_col92: E::F,
         a0_limb_0_col93: E::F,
         a0_limb_1_col94: E::F,
@@ -265,6 +291,13 @@ impl ModUtils {
         let M31_512 = E::F::from(M31::from(512));
         let M31_6 = E::F::from(M31::from(6));
         let M31_7 = E::F::from(M31::from(7));
+        let M31_shift4 = E::F::from(M31::from(1 << 4));
+        let M31_shift13 = E::F::from(M31::from(1 << 13));
+        let M31_shift22 = E::F::from(M31::from(1 << 22));
+        let M31_shift31 = E::F::from(M31::from(1 << 31));
+        let M31_shift9 = E::F::from(M31::from(1 << 9));
+        let M31_shift18 = E::F::from(M31::from(1 << 18));
+        let M31_shift27 = E::F::from(M31::from(1 << 27));
 
         // is_instance_0 is 0 or 1..
         eval.add_constraint(
@@ -273,15 +306,13 @@ impl ModUtils {
         // is_instance_0 is 0 when instance_num is not 0..
         eval.add_constraint((is_instance_0_col0.clone() * mod_utils_input_limb_1.clone()));
         let prev_instance_addr_tmp_7b599_1 = eval.add_intermediate(
-            (mod_utils_input_limb_0.clone()
-                + (M31_7.clone()
-                    * ((mod_utils_input_limb_1.clone() - M31_1.clone())
-                        + is_instance_0_col0.clone()))),
+            (M31_7.clone()
+                * ((mod_utils_input_limb_1.clone() - M31_1.clone()) + is_instance_0_col0.clone())),
         );
-        let instance_addr_tmp_7b599_2 = eval.add_intermediate(
-            (mod_utils_input_limb_0.clone() + (M31_7.clone() * mod_utils_input_limb_1.clone())),
-        );
+        let instance_addr_tmp_7b599_2 =
+            eval.add_intermediate((M31_7.clone() * mod_utils_input_limb_1.clone()));
         ReadPositiveNumBits99::evaluate(
+            segment_index.clone(),
             [instance_addr_tmp_7b599_2.clone()],
             p0_id_col1.clone(),
             p0_limb_0_col2.clone(),
@@ -300,6 +331,7 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_1.clone())],
             p1_id_col13.clone(),
             p1_limb_0_col14.clone(),
@@ -318,6 +350,7 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_2.clone())],
             p2_id_col25.clone(),
             p2_limb_0_col26.clone(),
@@ -336,6 +369,7 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_3.clone())],
             p3_id_col37.clone(),
             p3_limb_0_col38.clone(),
@@ -353,37 +387,56 @@ impl ModUtils {
             memory_id_to_big_lookup_elements,
             eval,
         );
-        ReadPositiveNumBits27::evaluate(
+        ReadPositiveNumBits72::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_4.clone())],
             values_ptr_id_col49.clone(),
             values_ptr_limb_0_col50.clone(),
             values_ptr_limb_1_col51.clone(),
             values_ptr_limb_2_col52.clone(),
+            values_ptr_limb_3_col252.clone(),
+            values_ptr_limb_4_col253.clone(),
+            values_ptr_limb_5_col254.clone(),
+            values_ptr_limb_6_col255.clone(),
+            values_ptr_limb_7_col256.clone(),
             memory_address_to_id_lookup_elements,
             memory_id_to_big_lookup_elements,
             eval,
         );
-        ReadPositiveNumBits27::evaluate(
+        ReadPositiveNumBits72::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_5.clone())],
             offsets_ptr_id_col53.clone(),
             offsets_ptr_limb_0_col54.clone(),
             offsets_ptr_limb_1_col55.clone(),
             offsets_ptr_limb_2_col56.clone(),
+            offsets_ptr_limb_3_col257.clone(),
+            offsets_ptr_limb_4_col258.clone(),
+            offsets_ptr_limb_5_col259.clone(),
+            offsets_ptr_limb_6_col260.clone(),
+            offsets_ptr_limb_7_col261.clone(),
             memory_address_to_id_lookup_elements,
             memory_id_to_big_lookup_elements,
             eval,
         );
-        ReadPositiveNumBits27::evaluate(
+        ReadPositiveNumBits72::evaluate(
+            segment_index.clone(),
             [(prev_instance_addr_tmp_7b599_1.clone() + M31_5.clone())],
             offsets_ptr_prev_id_col57.clone(),
             offsets_ptr_prev_limb_0_col58.clone(),
             offsets_ptr_prev_limb_1_col59.clone(),
             offsets_ptr_prev_limb_2_col60.clone(),
+            offsets_ptr_prev_limb_3_col262.clone(),
+            offsets_ptr_prev_limb_4_col263.clone(),
+            offsets_ptr_prev_limb_5_col264.clone(),
+            offsets_ptr_prev_limb_6_col265.clone(),
+            offsets_ptr_prev_limb_7_col266.clone(),
             memory_address_to_id_lookup_elements,
             memory_id_to_big_lookup_elements,
             eval,
         );
         ReadPositiveNumBits27::evaluate(
+            segment_index.clone(),
             [(instance_addr_tmp_7b599_2.clone() + M31_6.clone())],
             n_id_col61.clone(),
             n_limb_0_col62.clone(),
@@ -394,6 +447,7 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits27::evaluate(
+            segment_index.clone(),
             [(prev_instance_addr_tmp_7b599_1.clone() + M31_6.clone())],
             n_prev_id_col65.clone(),
             n_prev_limb_0_col66.clone(),
@@ -419,19 +473,38 @@ impl ModUtils {
                     - ((n_limb_0_col62.clone() + (n_limb_1_col63.clone() * M31_512.clone()))
                         + (n_limb_2_col64.clone() * M31_262144.clone())))),
         );
+
+        let offsets_ptr_segment_id = offsets_ptr_segment_id_initial_word_col268.clone()
+            + offsets_ptr_limb_4_col258.clone() * M31_shift4.clone()
+            + offsets_ptr_limb_5_col259.clone() * M31_shift13.clone()
+            + offsets_ptr_limb_6_col260.clone() * M31_shift22.clone()
+            + offsets_ptr_segment_id_final_word_col269.clone() * M31_shift31.clone();
+
+        let offsets_ptr_offset = offsets_ptr_limb_0_col54.clone()
+            + offsets_ptr_limb_1_col55.clone() * M31_shift9.clone()
+            + offsets_ptr_limb_2_col56.clone() * M31_shift18.clone()
+            + offsets_ptr_limb_3_col257.clone() * M31_shift27.clone();
+
+        let prev_offsets_ptr_segment_id = prev_offsets_ptr_segment_id_initial_word_col274.clone()
+            + offsets_ptr_prev_limb_4_col263.clone() * M31_shift4.clone()
+            + offsets_ptr_prev_limb_5_col264.clone() * M31_shift13.clone()
+            + offsets_ptr_prev_limb_6_col265.clone() * M31_shift22.clone()
+            + prev_offsets_ptr_segment_id_final_word_col275.clone() * M31_shift31.clone();
+
+        let prev_offsets_ptr_offset = offsets_ptr_prev_limb_0_col58.clone()
+            + offsets_ptr_prev_limb_1_col59.clone() * M31_shift9.clone()
+            + offsets_ptr_prev_limb_2_col60.clone() * M31_shift18.clone()
+            + offsets_ptr_prev_limb_3_col262.clone() * M31_shift27.clone();
+
         // Progression of offsets_ptr between instances..
         eval.add_constraint(
             (block_reset_condition_tmp_7b599_30.clone()
-                * ((((offsets_ptr_limb_0_col54.clone()
-                    + (offsets_ptr_limb_1_col55.clone() * M31_512.clone()))
-                    + (offsets_ptr_limb_2_col56.clone() * M31_262144.clone()))
-                    - M31_3.clone())
-                    - ((offsets_ptr_prev_limb_0_col58.clone()
-                        + (offsets_ptr_prev_limb_1_col59.clone() * M31_512.clone()))
-                        + (offsets_ptr_prev_limb_2_col60.clone() * M31_262144.clone())))),
+                * (((offsets_ptr_offset.clone()) - M31_3.clone())
+                    - (prev_offsets_ptr_offset.clone()))),
         );
         MemCondVerifyEqualKnownId::evaluate(
             [
+                segment_index.clone(),
                 (prev_instance_addr_tmp_7b599_1.clone() + M31_4.clone()),
                 values_ptr_id_col49.clone(),
                 block_reset_condition_tmp_7b599_30.clone(),
@@ -442,6 +515,7 @@ impl ModUtils {
         );
         MemCondVerifyEqualKnownId::evaluate(
             [
+                segment_index.clone(),
                 prev_instance_addr_tmp_7b599_1.clone(),
                 p0_id_col1.clone(),
                 block_reset_condition_tmp_7b599_30.clone(),
@@ -452,6 +526,7 @@ impl ModUtils {
         );
         MemCondVerifyEqualKnownId::evaluate(
             [
+                segment_index.clone(),
                 (prev_instance_addr_tmp_7b599_1.clone() + M31_1.clone()),
                 p1_id_col13.clone(),
                 block_reset_condition_tmp_7b599_30.clone(),
@@ -462,6 +537,7 @@ impl ModUtils {
         );
         MemCondVerifyEqualKnownId::evaluate(
             [
+                segment_index.clone(),
                 (prev_instance_addr_tmp_7b599_1.clone() + M31_2.clone()),
                 p2_id_col25.clone(),
                 block_reset_condition_tmp_7b599_30.clone(),
@@ -472,6 +548,7 @@ impl ModUtils {
         );
         MemCondVerifyEqualKnownId::evaluate(
             [
+                segment_index.clone(),
                 (prev_instance_addr_tmp_7b599_1.clone() + M31_3.clone()),
                 p3_id_col37.clone(),
                 block_reset_condition_tmp_7b599_30.clone(),
@@ -480,10 +557,10 @@ impl ModUtils {
             memory_address_to_id_lookup_elements,
             eval,
         );
+
         let [read_small_output_tmp_7b599_41_limb_0] = ReadSmall::evaluate(
-            [((offsets_ptr_limb_0_col54.clone()
-                + (offsets_ptr_limb_1_col55.clone() * M31_512.clone()))
-                + (offsets_ptr_limb_2_col56.clone() * M31_262144.clone()))],
+            offsets_ptr_segment_id.clone(),
+            [offsets_ptr_offset.clone()],
             offsets_a_id_col74.clone(),
             msb_col75.clone(),
             mid_limbs_set_col76.clone(),
@@ -495,10 +572,8 @@ impl ModUtils {
             eval,
         );
         let [read_small_output_tmp_7b599_47_limb_0] = ReadSmall::evaluate(
-            [(((offsets_ptr_limb_0_col54.clone()
-                + (offsets_ptr_limb_1_col55.clone() * M31_512.clone()))
-                + (offsets_ptr_limb_2_col56.clone() * M31_262144.clone()))
-                + M31_1.clone())],
+            offsets_ptr_segment_id.clone(),
+            [offsets_ptr_offset.clone() + M31_1.clone()],
             offsets_b_id_col80.clone(),
             msb_col81.clone(),
             mid_limbs_set_col82.clone(),
@@ -510,10 +585,8 @@ impl ModUtils {
             eval,
         );
         let [read_small_output_tmp_7b599_53_limb_0] = ReadSmall::evaluate(
-            [(((offsets_ptr_limb_0_col54.clone()
-                + (offsets_ptr_limb_1_col55.clone() * M31_512.clone()))
-                + (offsets_ptr_limb_2_col56.clone() * M31_262144.clone()))
-                + M31_2.clone())],
+            offsets_ptr_segment_id.clone(),
+            [offsets_ptr_offset.clone() + M31_2.clone()],
             offsets_c_id_col86.clone(),
             msb_col87.clone(),
             mid_limbs_set_col88.clone(),
@@ -529,8 +602,21 @@ impl ModUtils {
                 + (values_ptr_limb_1_col51.clone() * M31_512.clone()))
                 + (values_ptr_limb_2_col52.clone() * M31_262144.clone())),
         );
+
+        let values_ptr_segment_id = values_ptr_segment_id_initial_word_col271.clone()
+            + values_ptr_limb_4_col253.clone() * M31_shift4.clone()
+            + values_ptr_limb_5_col254.clone() * M31_shift13.clone()
+            + values_ptr_limb_6_col255.clone() * M31_shift22.clone()
+            + values_ptr_segment_id_final_word_col272.clone() * M31_shift31.clone();
+
+        let values_ptr_offset = values_ptr_limb_0_col50.clone()
+            + values_ptr_limb_1_col51.clone() * M31_shift9.clone()
+            + values_ptr_limb_2_col52.clone() * M31_shift18.clone()
+            + values_ptr_offset_final_word_col270.clone() * M31_shift27.clone();
+
         ReadPositiveNumBits99::evaluate(
-            [(values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_41_limb_0.clone())],
+            values_ptr_segment_id.clone(),
+            [(values_ptr_offset.clone() + read_small_output_tmp_7b599_41_limb_0.clone())],
             a0_id_col92.clone(),
             a0_limb_0_col93.clone(),
             a0_limb_1_col94.clone(),
@@ -548,8 +634,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
                     + M31_1.clone()),
             ],
             a1_id_col104.clone(),
@@ -569,8 +656,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
                     + M31_2.clone()),
             ],
             a2_id_col116.clone(),
@@ -590,8 +678,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_41_limb_0.clone())
                     + M31_3.clone()),
             ],
             a3_id_col128.clone(),
@@ -611,7 +700,8 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
-            [(values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_47_limb_0.clone())],
+            values_ptr_segment_id.clone(),
+            [(values_ptr_offset.clone() + read_small_output_tmp_7b599_47_limb_0.clone())],
             b0_id_col140.clone(),
             b0_limb_0_col141.clone(),
             b0_limb_1_col142.clone(),
@@ -629,8 +719,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
                     + M31_1.clone()),
             ],
             b1_id_col152.clone(),
@@ -650,8 +741,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
                     + M31_2.clone()),
             ],
             b2_id_col164.clone(),
@@ -671,8 +763,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_47_limb_0.clone())
                     + M31_3.clone()),
             ],
             b3_id_col176.clone(),
@@ -692,7 +785,8 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
-            [(values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_53_limb_0.clone())],
+            values_ptr_segment_id.clone(),
+            [(values_ptr_offset.clone() + read_small_output_tmp_7b599_53_limb_0.clone())],
             c0_id_col188.clone(),
             c0_limb_0_col189.clone(),
             c0_limb_1_col190.clone(),
@@ -710,8 +804,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
                     + M31_1.clone()),
             ],
             c1_id_col200.clone(),
@@ -731,8 +826,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
                     + M31_2.clone()),
             ],
             c2_id_col212.clone(),
@@ -752,8 +848,9 @@ impl ModUtils {
             eval,
         );
         ReadPositiveNumBits99::evaluate(
+            values_ptr_segment_id.clone(),
             [
-                ((values_ptr_tmp_7b599_54.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
+                ((values_ptr_offset.clone() + read_small_output_tmp_7b599_53_limb_0.clone())
                     + M31_3.clone()),
             ],
             c3_id_col224.clone(),
