@@ -17,15 +17,14 @@ use stwo_prover::core::pcs::TreeVec;
 use stwo_prover::relation;
 
 use super::prelude::RelationUse;
-use crate::preprocessed::{PreProcessedColumn, Seq};
 use crate::relations;
 
 // TODO(AlonH): Make memory size configurable.
 pub const MEMORY_ID_SIZE: usize = 1;
 pub const N_MULTIPLICITY_COLUMNS: usize = 1;
-pub const BIG_N_COLUMNS: usize = N_M31_IN_FELT252 + N_MULTIPLICITY_COLUMNS;
-pub const SMALL_N_COLUMNS: usize = N_M31_IN_SMALL_FELT252 + N_MULTIPLICITY_COLUMNS;
-pub const RELOCATABLE_N_COLUMNS: usize = N_M31_IN_RELOCATABLE_FELT252 + N_MULTIPLICITY_COLUMNS;
+pub const BIG_N_COLUMNS: usize = N_M31_IN_FELT252 + N_MULTIPLICITY_COLUMNS + MEMORY_ID_SIZE;
+pub const SMALL_N_COLUMNS: usize = N_M31_IN_SMALL_FELT252 + N_MULTIPLICITY_COLUMNS + MEMORY_ID_SIZE;
+pub const RELOCATABLE_N_COLUMNS: usize = N_M31_IN_RELOCATABLE_FELT252 + N_MULTIPLICITY_COLUMNS + MEMORY_ID_SIZE;
 
 pub type BigComponent = FrameworkComponent<BigEval>;
 pub type SmallComponent = FrameworkComponent<SmallEval>;
@@ -151,8 +150,8 @@ impl FrameworkEval for BigEval {
     }
 
     fn evaluate<E: EvalAtRow>(&self, mut eval: E) -> E {
-        let seq = eval.get_preprocessed_column(Seq::new(self.log_size()).id());
         let value: [E::F; N_M31_IN_FELT252] = std::array::from_fn(|_| eval.next_trace_mask());
+        let id = eval.next_trace_mask() + E::F::from(M31::from(self.offset)) + E::F::from(M31::from(LARGE_MEMORY_VALUE_ID_BASE));
         let multiplicity = eval.next_trace_mask();
 
         // Range check limbs.
@@ -206,9 +205,6 @@ impl FrameworkEval for BigEval {
         }
 
         // Yield the value.
-        let id = seq
-            + E::F::from(M31::from(LARGE_MEMORY_VALUE_ID_BASE))
-            + E::F::from(M31::from(self.offset));
         eval.add_to_relation(RelationEntry::new(
             &self.lookup_elements,
             E::EF::from(-multiplicity),
@@ -299,8 +295,8 @@ impl FrameworkEval for SmallEval {
     }
 
     fn evaluate<E: EvalAtRow>(&self, mut eval: E) -> E {
-        let seq = eval.get_preprocessed_column(Seq::new(self.log_size()).id());
         let value: [E::F; N_M31_IN_SMALL_FELT252] = std::array::from_fn(|_| eval.next_trace_mask());
+        let id = eval.next_trace_mask();
         let multiplicity = eval.next_trace_mask();
 
         // Range check limbs.
@@ -334,7 +330,6 @@ impl FrameworkEval for SmallEval {
         }
 
         // Yield the value.
-        let id = seq;
         eval.add_to_relation(RelationEntry::new(
             &self.lookup_elements,
             E::EF::from(-multiplicity),
@@ -374,9 +369,9 @@ impl FrameworkEval for RelocatableEval {
     }
 
     fn evaluate<E: EvalAtRow>(&self, mut eval: E) -> E {
-        let seq = eval.get_preprocessed_column(Seq::new(self.log_size()).id());
         let value: [E::F; N_M31_IN_RELOCATABLE_FELT252] =
-            std::array::from_fn(|_| eval.next_trace_mask());
+        std::array::from_fn(|_| eval.next_trace_mask());
+        let id = eval.next_trace_mask() + E::F::from(M31::from(RELOCATABLE_ID_BASE));
         let multiplicity = eval.next_trace_mask();
 
         // Range check limbs.
@@ -389,7 +384,6 @@ impl FrameworkEval for RelocatableEval {
         }
 
         // Yield the value.
-        let id = seq + E::F::from(M31::from(RELOCATABLE_ID_BASE));
         eval.add_to_relation(RelationEntry::new(
             &self.lookup_elements,
             E::EF::from(-multiplicity),
