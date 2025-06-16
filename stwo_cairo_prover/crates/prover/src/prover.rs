@@ -259,7 +259,6 @@ pub mod tests {
             .unwrap();
             verify_cairo::<Blake2sMerkleChannel>(
                 cairo_proof,
-                PcsConfig::default(),
                 preprocessed_trace,
             )
             .unwrap();
