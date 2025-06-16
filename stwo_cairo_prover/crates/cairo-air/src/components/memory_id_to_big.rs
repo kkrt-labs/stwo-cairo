@@ -433,8 +433,13 @@ impl Claim {
             SECURE_EXTENSION_DEGREE
                 * (N_M31_IN_SMALL_FELT252.div_ceil(2) + 1)
         ];
+        let relocatable_interaction_log_sizes = vec![
+            self.relocatable_log_size;
+            SECURE_EXTENSION_DEGREE
+                * (N_M31_IN_RELOCATABLE_FELT252.div_ceil(2) + 1)
+        ];
         let interaction_log_sizes =
-            chain!(big_interaction_log_sizes, small_interaction_log_sizes).collect_vec();
+            chain!(big_interaction_log_sizes, small_interaction_log_sizes,relocatable_interaction_log_sizes).collect_vec();
 
         TreeVec::new(vec![vec![], trace_log_sizes, interaction_log_sizes])
     }
