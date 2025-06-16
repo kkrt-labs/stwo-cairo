@@ -371,11 +371,11 @@ impl CasmStatesByOpcode {
 
             // add.
             Instruction {
-                offset0,
-                offset1,
+                offset0:_,
+                offset1:_,
                 offset2,
-                dst_base_fp,
-                op0_base_fp,
+                dst_base_fp:_,
+                op0_base_fp:_,
                 op_1_imm,
                 op_1_base_fp,
                 op_1_base_ap,
@@ -391,35 +391,6 @@ impl CasmStatesByOpcode {
                 opcode_assert_eq: true,
                 opcode_extension: OpcodeExtension::Stone,
             } => {
-                let (dst_addr, op0_addr, op_1_addr) = (
-                    if dst_base_fp { fp } else { ap },
-                    if op0_base_fp { fp } else { ap },
-                    if op_1_imm {
-                        pc
-                    } else if op_1_base_fp {
-                        fp
-                    } else {
-                        ap
-                    },
-                );
-                let (dst, op0, op_1) = (
-                    {
-                        let new_offset = dst_addr.0.checked_add_signed(offset0 as i32).unwrap();
-                        memory.get(Relocatable::execution(new_offset))
-                    },
-                    {
-                        let new_offset = op0_addr.0.checked_add_signed(offset1 as i32).unwrap();
-                        memory.get(Relocatable::execution(new_offset))
-                    },
-                    {
-                        let new_offset = op_1_addr.0.checked_add_signed(offset2 as i32).unwrap();
-                        memory.get(Relocatable {
-                            segment_index: if op_1_imm { 0 } else { 1 },
-                            offset: new_offset as u32,
-                        })
-                    },
-                );
-
                 // [ap/fp + offset0] = [ap/fp + offset1] + imm.
                 // [ap/fp + offset0] = [ap/fp + offset1] + [ap/fp + offset2].
                 assert_eq!(
