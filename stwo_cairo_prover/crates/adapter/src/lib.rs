@@ -6,13 +6,13 @@ use cairo_vm::types::builtin_name::BuiltinName;
 use memory::Memory;
 use opcodes::StateTransitions;
 use serde::{Deserialize, Serialize};
+use stwo_cairo_common::prover_types::cpu::Relocatable;
 
 pub mod adapter;
 pub mod builtins;
 pub mod decode;
 pub mod memory;
 pub mod opcodes;
-pub mod relocator;
 pub mod test_utils;
 pub mod vm_import;
 
@@ -24,7 +24,7 @@ pub struct ProverInput {
     pub state_transitions: StateTransitions,
     pub memory: Memory,
     pub inst_cache: Vec<(u32, u128)>,
-    pub public_memory_addresses: Vec<u32>,
+    pub public_memory_addresses: Vec<Relocatable>,
     pub builtins_segments: BuiltinSegments,
     pub public_segment_context: PublicSegmentContext,
 }
@@ -84,6 +84,8 @@ pub struct MemoryTablesSizes {
     pub id_to_big: usize,
     /// Size of memory ID to small value table.
     pub id_to_small: usize,
+    /// Size of memory ID to relocatable value table.
+    pub id_to_relocatable: usize,
 }
 
 /// Execution resources required to compute trace size.
@@ -111,9 +113,10 @@ impl ExecutionResources {
                 .collect(),
             builtin_instance_counts: input.builtins_segments.get_counts(),
             memory_tables_sizes: MemoryTablesSizes {
-                address_to_id: input.memory.address_to_id.len(),
+                address_to_id: input.memory.relocatable_to_id.len(),
                 id_to_big: input.memory.f252_values.len(),
                 id_to_small: input.memory.small_values.len(),
+                id_to_relocatable: input.memory.relocatable_values.len(),
             },
             verify_instructions_count: input.inst_cache.len(),
         }

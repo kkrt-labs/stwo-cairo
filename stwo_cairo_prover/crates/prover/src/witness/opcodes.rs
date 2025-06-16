@@ -7,10 +7,11 @@ use super::blake_context::BlakeContextClaimGenerator;
 use super::range_checks::RangeChecksClaimGenerator;
 use crate::witness::components::{
     add_ap_opcode, add_opcode, add_opcode_small, assert_eq_opcode, assert_eq_opcode_double_deref,
-    assert_eq_opcode_imm, blake_compress_opcode, call_opcode, call_opcode_rel_imm, generic_opcode,
-    jnz_opcode, jnz_opcode_taken, jump_opcode, jump_opcode_double_deref, jump_opcode_rel,
-    jump_opcode_rel_imm, memory_address_to_id, memory_id_to_big, mul_opcode, mul_opcode_small,
-    qm_31_add_mul_opcode, ret_opcode, verify_bitwise_xor_8, verify_instruction,
+    assert_eq_opcode_imm, blake_compress_opcode, call_opcode, call_opcode_op_1_base_fp,
+    call_opcode_rel, generic_opcode, jnz_opcode, jnz_opcode_taken, jump_opcode,
+    jump_opcode_double_deref, jump_opcode_rel, jump_opcode_rel_imm, memory_address_to_id,
+    memory_id_to_big, mul_opcode, mul_opcode_small, qm_31_add_mul_opcode, ret_opcode,
+    verify_bitwise_xor_8, verify_instruction,
 };
 use crate::witness::utils::TreeBuilder;
 
@@ -23,7 +24,8 @@ pub struct OpcodesClaimGenerator {
     assert_eq_double_deref: Vec<assert_eq_opcode_double_deref::ClaimGenerator>,
     blake: Vec<blake_compress_opcode::ClaimGenerator>,
     call: Vec<call_opcode::ClaimGenerator>,
-    call_rel_imm: Vec<call_opcode_rel_imm::ClaimGenerator>,
+    call_op_1_base_fp: Vec<call_opcode_op_1_base_fp::ClaimGenerator>,
+    call_rel: Vec<call_opcode_rel::ClaimGenerator>,
     generic: Vec<generic_opcode::ClaimGenerator>,
     jnz: Vec<jnz_opcode::ClaimGenerator>,
     jnz_taken: Vec<jnz_opcode_taken::ClaimGenerator>,
@@ -47,7 +49,8 @@ impl OpcodesClaimGenerator {
         let mut assert_eq_double_deref = vec![];
         let mut blake = vec![];
         let mut call = vec![];
-        let mut call_rel_imm = vec![];
+        let mut call_op_1_base_fp = vec![];
+        let mut call_rel = vec![];
         let mut generic = vec![];
         let mut jnz = vec![];
         let mut jnz_taken = vec![];
@@ -103,9 +106,18 @@ impl OpcodesClaimGenerator {
                 input.casm_states_by_opcode.call_opcode,
             ));
         }
-        if !input.casm_states_by_opcode.call_opcode_rel_imm.is_empty() {
-            call_rel_imm.push(call_opcode_rel_imm::ClaimGenerator::new(
-                input.casm_states_by_opcode.call_opcode_rel_imm,
+        if !input
+            .casm_states_by_opcode
+            .call_opcode_op_1_base_fp
+            .is_empty()
+        {
+            call_op_1_base_fp.push(call_opcode_op_1_base_fp::ClaimGenerator::new(
+                input.casm_states_by_opcode.call_opcode_op_1_base_fp,
+            ));
+        }
+        if !input.casm_states_by_opcode.call_opcode_rel.is_empty() {
+            call_rel.push(call_opcode_rel::ClaimGenerator::new(
+                input.casm_states_by_opcode.call_opcode_rel,
             ));
         }
         if !input.casm_states_by_opcode.generic_opcode.is_empty() {
@@ -177,7 +189,8 @@ impl OpcodesClaimGenerator {
             assert_eq_double_deref,
             blake,
             call,
-            call_rel_imm,
+            call_op_1_base_fp,
+            call_rel,
             generic,
             jnz,
             jnz_taken,
@@ -304,8 +317,20 @@ impl OpcodesClaimGenerator {
                 )
             })
             .unzip();
-        let (call_rel_imm_claims, call_rel_imm_interaction_gens) = self
-            .call_rel_imm
+        let (call_op_1_base_fp_claims, call_op_1_base_fp_interaction_gens) = self
+            .call_op_1_base_fp
+            .into_iter()
+            .map(|gen| {
+                gen.write_trace(
+                    tree_builder,
+                    memory_address_to_id_trace_generator,
+                    memory_id_to_value_trace_generator,
+                    verify_instruction_trace_generator,
+                )
+            })
+            .unzip();
+        let (call_rel_claims, call_rel_interaction_gens) = self
+            .call_rel
             .into_iter()
             .map(|gen| {
                 gen.write_trace(
@@ -484,7 +509,8 @@ impl OpcodesClaimGenerator {
                 assert_eq_double_deref: assert_eq_double_deref_claims,
                 blake: blake_claims,
                 call: call_claims,
-                call_rel_imm: call_rel_imm_claims,
+                call_op_1_base_fp: call_op_1_base_fp_claims,
+                call_rel: call_rel_claims,
                 generic: generic_opcode_claims,
                 jnz: jnz_claims,
                 jnz_taken: jnz_taken_claims,
@@ -506,7 +532,8 @@ impl OpcodesClaimGenerator {
                 assert_eq_double_deref: assert_eq_double_deref_interaction_gens,
                 blake: blake_interaction_gens,
                 call: call_interaction_gens,
-                call_rel_imm: call_rel_imm_interaction_gens,
+                call_op_1_base_fp: call_op_1_base_fp_interaction_gens,
+                call_rel: call_rel_interaction_gens,
                 generic_opcode_interaction_gens,
                 jnz: jnz_interaction_gens,
                 jnz_taken: jnz_taken_interaction_gens,
@@ -532,7 +559,8 @@ pub struct OpcodesInteractionClaimGenerator {
     assert_eq_double_deref: Vec<assert_eq_opcode_double_deref::InteractionClaimGenerator>,
     blake: Vec<blake_compress_opcode::InteractionClaimGenerator>,
     call: Vec<call_opcode::InteractionClaimGenerator>,
-    call_rel_imm: Vec<call_opcode_rel_imm::InteractionClaimGenerator>,
+    call_op_1_base_fp: Vec<call_opcode_op_1_base_fp::InteractionClaimGenerator>,
+    call_rel: Vec<call_opcode_rel::InteractionClaimGenerator>,
     generic_opcode_interaction_gens: Vec<generic_opcode::InteractionClaimGenerator>,
     jnz: Vec<jnz_opcode::InteractionClaimGenerator>,
     jnz_taken: Vec<jnz_opcode_taken::InteractionClaimGenerator>,
@@ -659,8 +687,21 @@ impl OpcodesInteractionClaimGenerator {
                 )
             })
             .collect();
-        let call_rel_imm_interaction_claims = self
-            .call_rel_imm
+        let call_op_1_base_fp_interaction_claims = self
+            .call_op_1_base_fp
+            .into_iter()
+            .map(|gen| {
+                gen.write_interaction_trace(
+                    tree_builder,
+                    &interaction_elements.memory_address_to_id,
+                    &interaction_elements.memory_id_to_value,
+                    &interaction_elements.opcodes,
+                    &interaction_elements.verify_instruction,
+                )
+            })
+            .collect();
+        let call_rel_interaction_claims = self
+            .call_rel
             .into_iter()
             .map(|gen| {
                 gen.write_interaction_trace(
@@ -850,7 +891,8 @@ impl OpcodesInteractionClaimGenerator {
             assert_eq_double_deref: assert_eq_double_deref_interaction_claims,
             blake: blake_interaction_claims,
             call: call_interaction_claims,
-            call_rel_imm: call_rel_imm_interaction_claims,
+            call_op_1_base_fp: call_op_1_base_fp_interaction_claims,
+            call_rel: call_rel_interaction_claims,
             generic: generic_opcode_interaction_claims,
             jnz: jnz_interaction_claims,
             jnz_taken: jnz_taken_interaction_claims,

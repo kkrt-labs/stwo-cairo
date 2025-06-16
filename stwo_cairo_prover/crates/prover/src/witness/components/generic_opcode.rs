@@ -66,7 +66,9 @@ impl ClaimGenerator {
 
 #[derive(Uninitialized, IterMut, ParIterMut)]
 struct SubComponentInputs {
-    verify_instruction: [Vec<verify_instruction::PackedInputType>; 1],memory_address_to_id: [Vec<memory_address_to_id::PackedInputType>; 3],memory_id_to_big: [Vec<memory_id_to_big::PackedInputType>; 3],range_check_9_9: [Vec<range_check_9_9::PackedInputType>; 4],range_check_9_9_b: [Vec<range_check_9_9_b::PackedInputType>; 4],range_check_9_9_c: [Vec<range_check_9_9_c::PackedInputType>; 4],range_check_9_9_d: [Vec<range_check_9_9_d::PackedInputType>; 4],range_check_9_9_e: [Vec<range_check_9_9_e::PackedInputType>; 4],range_check_9_9_f: [Vec<range_check_9_9_f::PackedInputType>; 4],range_check_9_9_g: [Vec<range_check_9_9_g::PackedInputType>; 2],range_check_9_9_h: [Vec<range_check_9_9_h::PackedInputType>; 2],range_check_19_h: [Vec<range_check_19_h::PackedInputType>; 4],range_check_19: [Vec<range_check_19::PackedInputType>; 4],range_check_19_b: [Vec<range_check_19_b::PackedInputType>; 4],range_check_19_c: [Vec<range_check_19_c::PackedInputType>; 4],range_check_19_d: [Vec<range_check_19_d::PackedInputType>; 3],range_check_19_e: [Vec<range_check_19_e::PackedInputType>; 3],range_check_19_f: [Vec<range_check_19_f::PackedInputType>; 3],range_check_19_g: [Vec<range_check_19_g::PackedInputType>; 3],
+    verify_instruction: [Vec<verify_instruction::PackedInputType>; 1],
+    memory_address_to_id: [Vec<PackedRelocatable>; 3],
+    memory_id_to_big: [Vec<memory_id_to_big::PackedInputType>; 3],range_check_9_9: [Vec<range_check_9_9::PackedInputType>; 4],range_check_9_9_b: [Vec<range_check_9_9_b::PackedInputType>; 4],range_check_9_9_c: [Vec<range_check_9_9_c::PackedInputType>; 4],range_check_9_9_d: [Vec<range_check_9_9_d::PackedInputType>; 4],range_check_9_9_e: [Vec<range_check_9_9_e::PackedInputType>; 4],range_check_9_9_f: [Vec<range_check_9_9_f::PackedInputType>; 4],range_check_9_9_g: [Vec<range_check_9_9_g::PackedInputType>; 2],range_check_9_9_h: [Vec<range_check_9_9_h::PackedInputType>; 2],range_check_19_h: [Vec<range_check_19_h::PackedInputType>; 4],range_check_19: [Vec<range_check_19::PackedInputType>; 4],range_check_19_b: [Vec<range_check_19_b::PackedInputType>; 4],range_check_19_c: [Vec<range_check_19_c::PackedInputType>; 4],range_check_19_d: [Vec<range_check_19_d::PackedInputType>; 3],range_check_19_e: [Vec<range_check_19_e::PackedInputType>; 3],range_check_19_f: [Vec<range_check_19_f::PackedInputType>; 3],range_check_19_g: [Vec<range_check_19_g::PackedInputType>; 3],
 }
 
 #[allow(clippy::useless_conversion)]
@@ -181,7 +183,7 @@ fn write_trace_simd(
 
             // Decode Instruction.
 
-            let memory_address_to_id_value_tmp_57455_0 = memory_address_to_id_state.deduce_output(input_pc_col0);let memory_id_to_big_value_tmp_57455_1 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_0);let offset0_tmp_57455_2 = ((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(0))) + (((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(1))) & (UInt16_127))) << (UInt16_9))));let offset0_col3 = offset0_tmp_57455_2.as_m31();
+            let memory_address_to_id_value_tmp_57455_0 = memory_address_to_id_state.deduce_output(PackedRelocatable::from_pc_m31(input_pc_col0));let memory_id_to_big_value_tmp_57455_1 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_0);let offset0_tmp_57455_2 = ((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(0))) + (((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(1))) & (UInt16_127))) << (UInt16_9))));let offset0_col3 = offset0_tmp_57455_2.as_m31();
             *row[3] = offset0_col3;let offset1_tmp_57455_3 = ((((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(1))) >> (UInt16_7))) + (((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(2))) << (UInt16_2))))) + (((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(3))) & (UInt16_31))) << (UInt16_11))));let offset1_col4 = offset1_tmp_57455_3.as_m31();
             *row[4] = offset1_col4;let offset2_tmp_57455_4 = ((((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(3))) >> (UInt16_5))) + (((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(4))) << (UInt16_4))))) + (((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(5))) & (UInt16_7))) << (UInt16_13))));let offset2_col5 = offset2_tmp_57455_4.as_m31();
             *row[5] = offset2_col5;let dst_base_fp_tmp_57455_5 = ((((((((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(5))) >> (UInt16_3))) + (((PackedUInt16::from_m31(memory_id_to_big_value_tmp_57455_1.get_m31(6))) << (UInt16_6))))) >> (UInt16_0))) & (UInt16_1));let dst_base_fp_col6 = dst_base_fp_tmp_57455_5.as_m31();
@@ -212,10 +214,10 @@ fn write_trace_simd(
 
             // Read Positive Num Bits 252.
 
-            let memory_address_to_id_value_tmp_57455_27 = memory_address_to_id_state.deduce_output(((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0])));let memory_id_to_big_value_tmp_57455_28 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_27);let dst_id_col22 = memory_address_to_id_value_tmp_57455_27;
+            let memory_address_to_id_value_tmp_57455_27 = memory_address_to_id_state.deduce_output(PackedRelocatable::from_ap_m31(((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0]))));let memory_id_to_big_value_tmp_57455_28 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_27);let dst_id_col22 = memory_address_to_id_value_tmp_57455_27;
             *row[22] = dst_id_col22;*sub_component_inputs.memory_address_to_id[0] =
-                ((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0]));
-            *lookup_data.memory_address_to_id_0 = [((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0])), dst_id_col22];let dst_limb_0_col23 = memory_id_to_big_value_tmp_57455_28.get_m31(0);
+                PackedRelocatable::from_ap_m31(((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0])));
+            *lookup_data.memory_address_to_id_0 = [M31_1, ((dst_src_col21) + (decode_generic_instruction_output_tmp_57455_26.1[0])), dst_id_col22];let dst_limb_0_col23 = memory_id_to_big_value_tmp_57455_28.get_m31(0);
             *row[23] = dst_limb_0_col23;let dst_limb_1_col24 = memory_id_to_big_value_tmp_57455_28.get_m31(1);
             *row[24] = dst_limb_1_col24;let dst_limb_2_col25 = memory_id_to_big_value_tmp_57455_28.get_m31(2);
             *row[25] = dst_limb_2_col25;let dst_limb_3_col26 = memory_id_to_big_value_tmp_57455_28.get_m31(3);
@@ -252,10 +254,12 @@ fn write_trace_simd(
 
             // Read Positive Num Bits 252.
 
-            let memory_address_to_id_value_tmp_57455_30 = memory_address_to_id_state.deduce_output(((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1])));let memory_id_to_big_value_tmp_57455_31 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_30);let op0_id_col52 = memory_address_to_id_value_tmp_57455_30;
+            let memory_address_to_id_value_tmp_57455_30 = memory_address_to_id_state.deduce_output(PackedRelocatable::from_ap_m31(((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1]))));
+            let memory_id_to_big_value_tmp_57455_31 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_30);
+            let op0_id_col52 = memory_address_to_id_value_tmp_57455_30;
             *row[52] = op0_id_col52;*sub_component_inputs.memory_address_to_id[1] =
-                ((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1]));
-            *lookup_data.memory_address_to_id_1 = [((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1])), op0_id_col52];let op0_limb_0_col53 = memory_id_to_big_value_tmp_57455_31.get_m31(0);
+                PackedRelocatable::from_ap_m31(((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1])));
+            *lookup_data.memory_address_to_id_1 = [M31_1, ((op0_src_col51) + (decode_generic_instruction_output_tmp_57455_26.1[1])), op0_id_col52];let op0_limb_0_col53 = memory_id_to_big_value_tmp_57455_31.get_m31(0);
             *row[53] = op0_limb_0_col53;let op0_limb_1_col54 = memory_id_to_big_value_tmp_57455_31.get_m31(1);
             *row[54] = op0_limb_1_col54;let op0_limb_2_col55 = memory_id_to_big_value_tmp_57455_31.get_m31(2);
             *row[55] = op0_limb_2_col55;let op0_limb_3_col56 = memory_id_to_big_value_tmp_57455_31.get_m31(3);
@@ -286,20 +290,61 @@ fn write_trace_simd(
             *row[80] = op0_limb_27_col80;*sub_component_inputs.memory_id_to_big[1] =
                 op0_id_col52;
             *lookup_data.memory_id_to_big_1 = [op0_id_col52, op0_limb_0_col53, op0_limb_1_col54, op0_limb_2_col55, op0_limb_3_col56, op0_limb_4_col57, op0_limb_5_col58, op0_limb_6_col59, op0_limb_7_col60, op0_limb_8_col61, op0_limb_9_col62, op0_limb_10_col63, op0_limb_11_col64, op0_limb_12_col65, op0_limb_13_col66, op0_limb_14_col67, op0_limb_15_col68, op0_limb_16_col69, op0_limb_17_col70, op0_limb_18_col71, op0_limb_19_col72, op0_limb_20_col73, op0_limb_21_col74, op0_limb_22_col75, op0_limb_23_col76, op0_limb_24_col77, op0_limb_25_col78, op0_limb_26_col79, op0_limb_27_col80];let read_positive_num_bits_252_output_tmp_57455_32 = (PackedFelt252::from_limbs([op0_limb_0_col53, op0_limb_1_col54, op0_limb_2_col55, op0_limb_3_col56, op0_limb_4_col57, op0_limb_5_col58, op0_limb_6_col59, op0_limb_7_col60, op0_limb_8_col61, op0_limb_9_col62, op0_limb_10_col63, op0_limb_11_col64, op0_limb_12_col65, op0_limb_13_col66, op0_limb_14_col67, op0_limb_15_col68, op0_limb_16_col69, op0_limb_17_col70, op0_limb_18_col71, op0_limb_19_col72, op0_limb_20_col73, op0_limb_21_col74, op0_limb_22_col75, op0_limb_23_col76, op0_limb_24_col77, op0_limb_25_col78, op0_limb_26_col79, op0_limb_27_col80]), op0_id_col52);
+            
+            let UInt32_9 = PackedUInt32::broadcast(UInt32::from(9));
+            let UInt32_18 = PackedUInt32::broadcast(UInt32::from(18));
+            let UInt32_27 = PackedUInt32::broadcast(UInt32::from(27));
+            let UInt32_31 = PackedUInt32::broadcast(UInt32::from(31));
+            let UInt32_5 = PackedUInt32::broadcast(UInt32::from(5));
+            let UInt32_4 = PackedUInt32::broadcast(UInt32::from(4));
+            let UInt32_13 = PackedUInt32::broadcast(UInt32::from(13));
+            let UInt32_22 = PackedUInt32::broadcast(UInt32::from(22));
+            let UInt32_31 = PackedUInt32::broadcast(UInt32::from(31));
+            let UInt32_1 = PackedUInt32::broadcast(UInt32::from(1));
 
-            // Cond Felt 252 As Addr.
+            let packed_offset = (
+                PackedUInt32::from_m31(op0_limb_0_col53)
+                | (PackedUInt32::from_m31(op0_limb_1_col54) << UInt32_9)
+                | (PackedUInt32::from_m31(op0_limb_2_col55) << UInt32_18)
+                | ((PackedUInt32::from_m31(op0_limb_3_col56) & UInt32_31) << UInt32_27)
+            ).as_m31();
+            let packed_segment_id = (
+                (PackedUInt32::from_m31(op0_limb_3_col56) >> UInt32_5)
+                | (PackedUInt32::from_m31(op0_limb_4_col57) << UInt32_4)
+                | (PackedUInt32::from_m31(op0_limb_5_col58) << UInt32_13)
+                | (PackedUInt32::from_m31(op0_limb_6_col59) << UInt32_22)
+                | ((PackedUInt32::from_m31(op0_limb_7_col60) & UInt32_1) << UInt32_31)
+            ).as_m31();
 
-            let cond_felt_252_as_addr_output_tmp_57455_33 = ((((op0_limb_0_col53) + (((op0_limb_1_col54) * (M31_512))))) + (((op0_limb_2_col55) * (M31_262144))));
+            let offset_final_word_col236 = (PackedUInt32::from_m31(op0_limb_3_col56) & UInt32_31).as_m31();
+            *row[236] = offset_final_word_col236;
+            let segment_id_initial_word_col237 = (PackedUInt32::from_m31(op0_limb_3_col56) >> UInt32_5).as_m31();
+            *row[237] = segment_id_initial_word_col237;
+            let segment_id_final_word_col238 = (PackedUInt32::from_m31(op0_limb_7_col60) & UInt32_1).as_m31();
+            *row[238] = segment_id_final_word_col238;
 
-            let op1_src_col81 = ((((((((op1_base_fp_col9) * (input_fp_col2))) + (((op1_base_ap_col10) * (input_ap_col1))))) + (((op1_imm_col8) * (input_pc_col0))))) + (((decode_generic_instruction_output_tmp_57455_26.0[15]) * (cond_felt_252_as_addr_output_tmp_57455_33))));
+            let op1_src_col81 = ((((((((op1_base_fp_col9) * (input_fp_col2))) + (((op1_base_ap_col10) * (input_ap_col1))))) + (((op1_imm_col8) * (input_pc_col0))))) + (((decode_generic_instruction_output_tmp_57455_26.0[15]) * (packed_offset))));
             *row[81] = op1_src_col81;
 
             // Read Positive Num Bits 252.
 
-            let memory_address_to_id_value_tmp_57455_34 = memory_address_to_id_state.deduce_output(((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2])));let memory_id_to_big_value_tmp_57455_35 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_34);let op1_id_col82 = memory_address_to_id_value_tmp_57455_34;
-            *row[82] = op1_id_col82;*sub_component_inputs.memory_address_to_id[2] =
-                ((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2]));
-            *lookup_data.memory_address_to_id_2 = [((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2])), op1_id_col82];let op1_limb_0_col83 = memory_id_to_big_value_tmp_57455_35.get_m31(0);
+            let final_segment_id = (M31_1 - op1_imm_col8) * (
+                (decode_generic_instruction_output_tmp_57455_26.0[15] * packed_segment_id) +
+                ((M31_1 - decode_generic_instruction_output_tmp_57455_26.0[15]) * M31_1)
+            );
+
+            let memory_address_to_id_value_tmp_57455_34 = memory_address_to_id_state.deduce_output(PackedRelocatable{
+                segment_index: final_segment_id,
+                offset: ((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2])),
+            });
+            let memory_id_to_big_value_tmp_57455_35 = memory_id_to_big_state.deduce_output(memory_address_to_id_value_tmp_57455_34);
+            let op1_id_col82 = memory_address_to_id_value_tmp_57455_34;
+            *row[82] = op1_id_col82;*sub_component_inputs.memory_address_to_id[2] = PackedRelocatable{
+                segment_index: final_segment_id,
+                offset: ((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2])),
+            };
+            *lookup_data.memory_address_to_id_2 = [final_segment_id, ((op1_src_col81) + (decode_generic_instruction_output_tmp_57455_26.1[2])), op1_id_col82];
+            let op1_limb_0_col83 = memory_id_to_big_value_tmp_57455_35.get_m31(0);
             *row[83] = op1_limb_0_col83;let op1_limb_1_col84 = memory_id_to_big_value_tmp_57455_35.get_m31(1);
             *row[84] = op1_limb_1_col84;let op1_limb_2_col85 = memory_id_to_big_value_tmp_57455_35.get_m31(2);
             *row[85] = op1_limb_2_col85;let op1_limb_3_col86 = memory_id_to_big_value_tmp_57455_35.get_m31(3);
@@ -608,11 +653,11 @@ fn write_trace_simd(
 
             // Cond Felt 252 As Addr.
 
-            let cond_felt_252_as_addr_output_tmp_57455_93 = ((((dst_limb_0_col23) + (((dst_limb_1_col24) * (M31_512))))) + (((dst_limb_2_col25) * (M31_262144))));
+            // let cond_felt_252_as_addr_output_tmp_57455_93 = ((((dst_limb_0_col23) + (((dst_limb_1_col24) * (M31_512))))) + (((dst_limb_2_col25) * (M31_262144))));
 
             // Cond Felt 252 As Addr.
 
-            let cond_felt_252_as_addr_output_tmp_57455_94 = ((((op0_limb_0_col53) + (((op0_limb_1_col54) * (M31_512))))) + (((op0_limb_2_col55) * (M31_262144))));
+            // let cond_felt_252_as_addr_output_tmp_57455_94 = ((((op0_limb_0_col53) + (((op0_limb_1_col54) * (M31_512))))) + (((op0_limb_2_col55) * (M31_262144))));
 
             // Update Registers.
 
@@ -650,7 +695,8 @@ fn write_trace_simd(
             let cond_felt_252_as_rel_imm_output_tmp_57455_109 = ((((((((op1_limb_0_col83) + (((op1_limb_1_col84) * (M31_512))))) + (((op1_limb_2_col85) * (M31_262144))))) - (msb_col229))) - (((M31_134217728) * (mid_limbs_set_col230))));
 
             let next_pc_jnz_col231 = ((((dst_is_zero_tmp_57455_105.as_m31()) * (((input_pc_col0) + (decode_generic_instruction_output_tmp_57455_26.0[19]))))) + (((((M31_1) - (dst_is_zero_tmp_57455_105.as_m31()))) * (((input_pc_col0) + (cond_felt_252_as_rel_imm_output_tmp_57455_109))))));
-            *row[231] = next_pc_jnz_col231;let next_pc_col232 = ((((((((decode_generic_instruction_output_tmp_57455_26.0[17]) * (((input_pc_col0) + (decode_generic_instruction_output_tmp_57455_26.0[19]))))) + (((pc_update_jump_col13) * (cond_felt_252_as_addr_output_tmp_57455_95))))) + (((pc_update_jump_rel_col14) * (((input_pc_col0) + (cond_felt_252_as_rel_imm_output_tmp_57455_100))))))) + (((pc_update_jnz_col15) * (next_pc_jnz_col231))));
+            *row[231] = next_pc_jnz_col231;
+            let next_pc_col232 = ((((((((decode_generic_instruction_output_tmp_57455_26.0[17]) * (((input_pc_col0) + (decode_generic_instruction_output_tmp_57455_26.0[19]))))) + (((pc_update_jump_col13) * (cond_felt_252_as_addr_output_tmp_57455_95))))) + (((pc_update_jump_rel_col14) * (((input_pc_col0) + (cond_felt_252_as_rel_imm_output_tmp_57455_100))))))) + (((pc_update_jnz_col15) * (next_pc_jnz_col231))));
             *row[232] = next_pc_col232;let next_ap_col233 = ((((((input_ap_col1) + (((ap_update_add_col16) * (cond_felt_252_as_rel_imm_output_tmp_57455_100))))) + (ap_update_add_1_col17))) + (((opcode_call_col18) * (M31_2))));
             *row[233] = next_ap_col233;let next_fp_col234 = ((((((decode_generic_instruction_output_tmp_57455_26.0[18]) * (input_fp_col2))) + (((opcode_ret_col19) * (cond_felt_252_as_addr_output_tmp_57455_96))))) + (((opcode_call_col18) * (((input_ap_col1) + (M31_2))))));
             *row[234] = next_fp_col234;let update_registers_output_tmp_57455_110 = PackedCasmState {
@@ -665,7 +711,7 @@ fn write_trace_simd(
 
 #[derive(Uninitialized,IterMut, ParIterMut)]
 struct LookupData
-{memory_address_to_id_0: Vec<[PackedM31; 2]>,memory_address_to_id_1: Vec<[PackedM31; 2]>,memory_address_to_id_2: Vec<[PackedM31; 2]>,memory_id_to_big_0: Vec<[PackedM31; 29]>,memory_id_to_big_1: Vec<[PackedM31; 29]>,memory_id_to_big_2: Vec<[PackedM31; 29]>,opcodes_0: Vec<[PackedM31; 3]>,opcodes_1: Vec<[PackedM31; 3]>,range_check_19_0: Vec<[PackedM31; 1]>,range_check_19_1: Vec<[PackedM31; 1]>,range_check_19_2: Vec<[PackedM31; 1]>,range_check_19_3: Vec<[PackedM31; 1]>,range_check_19_b_0: Vec<[PackedM31; 1]>,range_check_19_b_1: Vec<[PackedM31; 1]>,range_check_19_b_2: Vec<[PackedM31; 1]>,range_check_19_b_3: Vec<[PackedM31; 1]>,range_check_19_c_0: Vec<[PackedM31; 1]>,range_check_19_c_1: Vec<[PackedM31; 1]>,range_check_19_c_2: Vec<[PackedM31; 1]>,range_check_19_c_3: Vec<[PackedM31; 1]>,range_check_19_d_0: Vec<[PackedM31; 1]>,range_check_19_d_1: Vec<[PackedM31; 1]>,range_check_19_d_2: Vec<[PackedM31; 1]>,range_check_19_e_0: Vec<[PackedM31; 1]>,range_check_19_e_1: Vec<[PackedM31; 1]>,range_check_19_e_2: Vec<[PackedM31; 1]>,range_check_19_f_0: Vec<[PackedM31; 1]>,range_check_19_f_1: Vec<[PackedM31; 1]>,range_check_19_f_2: Vec<[PackedM31; 1]>,range_check_19_g_0: Vec<[PackedM31; 1]>,range_check_19_g_1: Vec<[PackedM31; 1]>,range_check_19_g_2: Vec<[PackedM31; 1]>,range_check_19_h_0: Vec<[PackedM31; 1]>,range_check_19_h_1: Vec<[PackedM31; 1]>,range_check_19_h_2: Vec<[PackedM31; 1]>,range_check_19_h_3: Vec<[PackedM31; 1]>,range_check_9_9_0: Vec<[PackedM31; 2]>,range_check_9_9_1: Vec<[PackedM31; 2]>,range_check_9_9_2: Vec<[PackedM31; 2]>,range_check_9_9_3: Vec<[PackedM31; 2]>,range_check_9_9_b_0: Vec<[PackedM31; 2]>,range_check_9_9_b_1: Vec<[PackedM31; 2]>,range_check_9_9_b_2: Vec<[PackedM31; 2]>,range_check_9_9_b_3: Vec<[PackedM31; 2]>,range_check_9_9_c_0: Vec<[PackedM31; 2]>,range_check_9_9_c_1: Vec<[PackedM31; 2]>,range_check_9_9_c_2: Vec<[PackedM31; 2]>,range_check_9_9_c_3: Vec<[PackedM31; 2]>,range_check_9_9_d_0: Vec<[PackedM31; 2]>,range_check_9_9_d_1: Vec<[PackedM31; 2]>,range_check_9_9_d_2: Vec<[PackedM31; 2]>,range_check_9_9_d_3: Vec<[PackedM31; 2]>,range_check_9_9_e_0: Vec<[PackedM31; 2]>,range_check_9_9_e_1: Vec<[PackedM31; 2]>,range_check_9_9_e_2: Vec<[PackedM31; 2]>,range_check_9_9_e_3: Vec<[PackedM31; 2]>,range_check_9_9_f_0: Vec<[PackedM31; 2]>,range_check_9_9_f_1: Vec<[PackedM31; 2]>,range_check_9_9_f_2: Vec<[PackedM31; 2]>,range_check_9_9_f_3: Vec<[PackedM31; 2]>,range_check_9_9_g_0: Vec<[PackedM31; 2]>,range_check_9_9_g_1: Vec<[PackedM31; 2]>,range_check_9_9_h_0: Vec<[PackedM31; 2]>,range_check_9_9_h_1: Vec<[PackedM31; 2]>,verify_instruction_0: Vec<[PackedM31; 7]>,}
+{memory_address_to_id_0: Vec<[PackedM31; 3]>,memory_address_to_id_1: Vec<[PackedM31; 3]>,memory_address_to_id_2: Vec<[PackedM31; 3]>,memory_id_to_big_0: Vec<[PackedM31; 29]>,memory_id_to_big_1: Vec<[PackedM31; 29]>,memory_id_to_big_2: Vec<[PackedM31; 29]>,opcodes_0: Vec<[PackedM31; 3]>,opcodes_1: Vec<[PackedM31; 3]>,range_check_19_0: Vec<[PackedM31; 1]>,range_check_19_1: Vec<[PackedM31; 1]>,range_check_19_2: Vec<[PackedM31; 1]>,range_check_19_3: Vec<[PackedM31; 1]>,range_check_19_b_0: Vec<[PackedM31; 1]>,range_check_19_b_1: Vec<[PackedM31; 1]>,range_check_19_b_2: Vec<[PackedM31; 1]>,range_check_19_b_3: Vec<[PackedM31; 1]>,range_check_19_c_0: Vec<[PackedM31; 1]>,range_check_19_c_1: Vec<[PackedM31; 1]>,range_check_19_c_2: Vec<[PackedM31; 1]>,range_check_19_c_3: Vec<[PackedM31; 1]>,range_check_19_d_0: Vec<[PackedM31; 1]>,range_check_19_d_1: Vec<[PackedM31; 1]>,range_check_19_d_2: Vec<[PackedM31; 1]>,range_check_19_e_0: Vec<[PackedM31; 1]>,range_check_19_e_1: Vec<[PackedM31; 1]>,range_check_19_e_2: Vec<[PackedM31; 1]>,range_check_19_f_0: Vec<[PackedM31; 1]>,range_check_19_f_1: Vec<[PackedM31; 1]>,range_check_19_f_2: Vec<[PackedM31; 1]>,range_check_19_g_0: Vec<[PackedM31; 1]>,range_check_19_g_1: Vec<[PackedM31; 1]>,range_check_19_g_2: Vec<[PackedM31; 1]>,range_check_19_h_0: Vec<[PackedM31; 1]>,range_check_19_h_1: Vec<[PackedM31; 1]>,range_check_19_h_2: Vec<[PackedM31; 1]>,range_check_19_h_3: Vec<[PackedM31; 1]>,range_check_9_9_0: Vec<[PackedM31; 2]>,range_check_9_9_1: Vec<[PackedM31; 2]>,range_check_9_9_2: Vec<[PackedM31; 2]>,range_check_9_9_3: Vec<[PackedM31; 2]>,range_check_9_9_b_0: Vec<[PackedM31; 2]>,range_check_9_9_b_1: Vec<[PackedM31; 2]>,range_check_9_9_b_2: Vec<[PackedM31; 2]>,range_check_9_9_b_3: Vec<[PackedM31; 2]>,range_check_9_9_c_0: Vec<[PackedM31; 2]>,range_check_9_9_c_1: Vec<[PackedM31; 2]>,range_check_9_9_c_2: Vec<[PackedM31; 2]>,range_check_9_9_c_3: Vec<[PackedM31; 2]>,range_check_9_9_d_0: Vec<[PackedM31; 2]>,range_check_9_9_d_1: Vec<[PackedM31; 2]>,range_check_9_9_d_2: Vec<[PackedM31; 2]>,range_check_9_9_d_3: Vec<[PackedM31; 2]>,range_check_9_9_e_0: Vec<[PackedM31; 2]>,range_check_9_9_e_1: Vec<[PackedM31; 2]>,range_check_9_9_e_2: Vec<[PackedM31; 2]>,range_check_9_9_e_3: Vec<[PackedM31; 2]>,range_check_9_9_f_0: Vec<[PackedM31; 2]>,range_check_9_9_f_1: Vec<[PackedM31; 2]>,range_check_9_9_f_2: Vec<[PackedM31; 2]>,range_check_9_9_f_3: Vec<[PackedM31; 2]>,range_check_9_9_g_0: Vec<[PackedM31; 2]>,range_check_9_9_g_1: Vec<[PackedM31; 2]>,range_check_9_9_h_0: Vec<[PackedM31; 2]>,range_check_9_9_h_1: Vec<[PackedM31; 2]>,verify_instruction_0: Vec<[PackedM31; 7]>,}
 
 pub struct InteractionClaimGenerator {
     n_rows: usize, log_size: u32,

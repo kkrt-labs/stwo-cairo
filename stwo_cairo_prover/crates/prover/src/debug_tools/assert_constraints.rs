@@ -72,7 +72,8 @@ fn assert_cairo_components(trace: TreeVec<Vec<&Vec<M31>>>, cairo_components: &Ca
         assert_eq_double_deref,
         blake,
         call,
-        call_rel_imm,
+        call_op_1_base_fp,
+        call_rel,
         generic,
         jnz,
         jnz_taken,
@@ -91,9 +92,10 @@ fn assert_cairo_components(trace: TreeVec<Vec<&Vec<M31>>>, cairo_components: &Ca
     assert_many(assert_eq, &trace);
     assert_many(assert_eq_imm, &trace);
     assert_many(assert_eq_double_deref, &trace);
-    assert_many(blake, &trace);
+    assert_many(blake, &trace); // blake not used in the cairo test
     assert_many(call, &trace);
-    assert_many(call_rel_imm, &trace);
+    assert_many(call_op_1_base_fp, &trace);
+    assert_many(call_rel, &trace);
     assert_many(generic, &trace);
     assert_many(jnz, &trace);
     assert_many(jnz_taken, &trace);

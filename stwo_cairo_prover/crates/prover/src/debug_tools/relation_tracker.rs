@@ -59,11 +59,15 @@ where
     public_data
         .public_memory
         .get_entries(initial_pc, initial_ap, final_ap)
-        .for_each(|(addr, id, val)| {
+        .for_each(|(seg_id, offset, id, val)| {
             entries.push(RelationTrackerEntry {
                 relation: "MemoryAddressToId".to_string(),
                 mult: M31::one(),
-                values: vec![M31::from_u32_unchecked(addr), M31::from_u32_unchecked(id)],
+                values: vec![
+                    M31::from_u32_unchecked(seg_id),
+                    M31::from_u32_unchecked(offset),
+                    M31::from_u32_unchecked(id),
+                ],
             });
             entries.push(RelationTrackerEntry {
                 relation: "MemoryIdToBig".to_string(),
@@ -117,7 +121,8 @@ fn cairo_relation_entries(
         assert_eq_double_deref,
         blake,
         call,
-        call_rel_imm,
+        call_op_1_base_fp,
+        call_rel,
         generic,
         jnz,
         jnz_taken,
@@ -140,7 +145,8 @@ fn cairo_relation_entries(
         add_to_relation_entries_many(assert_eq_double_deref, trace),
         add_to_relation_entries_many(blake, trace),
         add_to_relation_entries_many(call, trace),
-        add_to_relation_entries_many(call_rel_imm, trace),
+        add_to_relation_entries_many(call_op_1_base_fp, trace),
+        add_to_relation_entries_many(call_rel, trace),
         add_to_relation_entries_many(generic, trace),
         add_to_relation_entries_many(jnz, trace),
         add_to_relation_entries_many(jnz_taken, trace),
@@ -174,6 +180,7 @@ fn cairo_relation_entries(
         add_to_relation_entries(memory_address_to_id, trace),
         add_to_relation_entries_many(&memory_id_to_value.0, trace),
         add_to_relation_entries(&memory_id_to_value.1, trace),
+        add_to_relation_entries(&memory_id_to_value.2, trace),
     )
     .collect_vec();
 

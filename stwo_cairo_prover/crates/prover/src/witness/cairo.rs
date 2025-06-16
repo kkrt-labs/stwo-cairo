@@ -3,10 +3,10 @@ use cairo_air::air::{
     PublicMemory, PublicSegmentRanges, SegmentRange,
 };
 use itertools::Itertools;
-use stwo_cairo_adapter::memory::Memory;
 use stwo_cairo_adapter::{ProverInput, PublicSegmentContext};
+use stwo_cairo_adapter::memory::{Memory, MemoryValue};
 use stwo_prover::core::backend::simd::SimdBackend;
-use stwo_prover::core::fields::m31::M31;
+
 use tracing::{span, Level};
 
 use super::blake_context::{BlakeContextClaimGenerator, BlakeContextInteractionClaimGenerator};
@@ -24,6 +24,7 @@ use crate::witness::components::{
     verify_bitwise_xor_8, verify_bitwise_xor_9, verify_instruction,
 };
 use crate::witness::utils::TreeBuilder;
+use stwo_cairo_common::prover_types::cpu::Relocatable;
 
 fn extract_public_segments(
     memory: &Memory,
@@ -33,21 +34,43 @@ fn extract_public_segments(
 ) -> PublicSegmentRanges {
     let n_public_segments = public_segment_context.iter().filter(|&b| *b).count() as u32;
 
-    let to_memory_value = |addr: u32| {
+    let to_memory_value = |addr: Relocatable| {
         let id = memory.get_raw_id(addr);
-        let value = memory.get(addr).as_small() as u32;
-        MemorySmallValue { id, value }
+        let value = match memory.get(addr) {
+            MemoryValue::Small(x) => MemorySmallValue {
+                id,
+                segment_index: 0,
+                offset: x as u32,
+            },
+            MemoryValue::F252(x) => MemorySmallValue {
+                id,
+                segment_index: 0,
+                offset: x[0] as u32,
+            },
+            MemoryValue::MemoryRelocatable(x) => MemorySmallValue {
+                id,
+                segment_index: x[0] as u32,
+                offset: x[1] as u32,
+            },
+        };
+        value
     };
 
-    let start_ptrs = (initial_ap..initial_ap + n_public_segments).map(to_memory_value);
-    let end_ptrs = (final_ap - n_public_segments..final_ap).map(to_memory_value);
-    let mut ranges = start_ptrs
+    let start_ptrs = (initial_ap..initial_ap + n_public_segments)
+        .map(|i| Relocatable::execution(i))
+        .map(to_memory_value);
+    let end_ptrs = (final_ap - n_public_segments..final_ap)
+        .map(|i| Relocatable::execution(i))
+        .map(to_memory_value);
+    let ranges: Vec<_> = start_ptrs
         .zip(end_ptrs)
         .map(|(start_ptr, stop_ptr)| SegmentRange {
             start_ptr,
             stop_ptr,
-        });
+        })
+        .collect();
     let mut present = public_segment_context.into_iter();
+    let mut ranges = ranges.into_iter();
     let mut next = || {
         let present = present.next().unwrap();
         if present {
@@ -79,12 +102,22 @@ fn extract_sections_from_memory(
     final_ap: u32,
     public_segment_context: PublicSegmentContext,
 ) -> PublicMemory {
-    let public_segments =
-        extract_public_segments(memory, initial_ap, final_ap, public_segment_context);
-    let program_memory_addresses = initial_pc..initial_ap - 2;
-    let safe_call_addresses = initial_ap - 2..initial_ap;
-    let output_memory_addresses =
-        public_segments.output.start_ptr.value..public_segments.output.stop_ptr.value;
+    let public_segments = extract_public_segments(memory, initial_ap, final_ap, public_segment_context);
+    let program_memory_addresses = (initial_pc..(memory.relocatable_to_id[0].len()) as u32)
+        .map(|i| Relocatable::program(i as u32))
+        .collect_vec();
+    let safe_call_addresses = vec![
+        Relocatable::execution(initial_ap - 2),
+        Relocatable::execution(initial_ap - 1),
+    ];
+    let output_memory_addresses = (public_segments.output.start_ptr.offset
+        ..public_segments.output.stop_ptr.offset)
+        .map(|i| Relocatable {
+            segment_index: 2,
+            offset: i as u32,
+        })
+        .collect_vec();
+
     let [program, safe_call, output] = [
         program_memory_addresses,
         safe_call_addresses,
@@ -92,6 +125,7 @@ fn extract_sections_from_memory(
     ]
     .map(|range| {
         range
+            .into_iter()
             .map(|addr| {
                 let id = memory.get_raw_id(addr);
                 let value = memory.get(addr).as_u256();
@@ -163,7 +197,6 @@ impl CairoClaimGenerator {
         for addr in public_memory_addresses
             .iter()
             .copied()
-            .map(M31::from_u32_unchecked)
         {
             let id = memory_address_to_id_trace_generator.get_id(addr);
             memory_address_to_id_trace_generator.add_input(&addr);

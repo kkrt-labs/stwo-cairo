@@ -24,6 +24,39 @@ impl NumericType for UInt16 {}
 impl NumericType for UInt32 {}
 impl NumericType for UInt64 {}
 
+#[derive(
+    Eq, Ord, Hash, PartialEq, PartialOrd, Clone, Copy, Debug, Serialize, Deserialize, Default, CairoSerialize,
+)]
+pub struct Relocatable {
+    pub segment_index: usize,
+    pub offset: u32,
+}
+impl Relocatable {
+    pub fn program(addr: u32) -> Self {
+        Relocatable {
+            segment_index: 0,
+            offset: addr,
+        }
+    }
+    pub fn execution(addr: u32) -> Self {
+        Relocatable {
+            segment_index: 1,
+            offset: addr,
+        }
+    }
+}
+
+impl Add<u32> for Relocatable {
+    type Output = Self;
+
+    fn add(self, rhs_offset: u32) -> Self::Output {
+        Relocatable {
+            segment_index: self.segment_index,
+            offset: self.offset + rhs_offset,
+        }
+    }
+}
+
 pub trait SingleFeltType: ProverType {
     fn as_m31(&self) -> M31;
 }
@@ -69,7 +102,10 @@ impl CasmState {
 
 impl ProverType for CasmState {
     fn calc(&self) -> String {
-        format!("{{ pc: {}, ap: {}, fp: {} }}", self.pc, self.ap, self.fp)
+        format!(
+            "{{ pc: {:?}, ap: {:?}, fp: {:?} }}",
+            self.pc.0, self.ap.0, self.fp.0
+        )
     }
     fn r#type() -> String {
         "CasmState".to_string()

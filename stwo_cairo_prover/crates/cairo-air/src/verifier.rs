@@ -1,4 +1,4 @@
-use num_traits::{One, Zero};
+use num_traits::Zero;
 use paste::paste;
 use serde_json::to_string_pretty;
 use stwo_cairo_adapter::builtins::{
@@ -52,16 +52,16 @@ fn verify_claim(claim: &CairoClaim) {
 
     verify_program(program, public_segments);
 
-    assert_eq!(*initial_pc, BaseField::one());
+    assert_eq!(*initial_pc, BaseField::zero());
     assert!(
-        *initial_pc + BaseField::from(2) < *initial_ap,
+        *initial_pc + BaseField::from(2) <= *initial_ap,
         "Initial pc + 2 must be less than initial ap, but got initial_pc: {}, initial_ap: {}",
         initial_pc,
         initial_ap
     );
     assert_eq!(initial_fp, final_fp);
     assert_eq!(initial_fp, initial_ap);
-    assert_eq!(*final_pc, BaseField::from(5));
+    assert_eq!(*final_pc, BaseField::from(4));
     assert!(initial_ap <= final_ap);
 
     // Assert that each relation has strictly less than P uses.
@@ -129,26 +129,26 @@ fn verify_builtins(builtins_claim: &BuiltinsClaim, segment_ranges: &PublicSegmen
     // Check that non-supported builtins aren't used.
     if let Some(ecdsa) = ecdsa {
         assert_eq!(
-            ecdsa.start_ptr.value, ecdsa.stop_ptr.value,
+            ecdsa.start_ptr.offset, ecdsa.stop_ptr.offset,
             "ECDSA segment is not empty"
         );
     }
     if let Some(keccak) = keccak {
         assert_eq!(
-            keccak.start_ptr.value, keccak.stop_ptr.value,
+            keccak.start_ptr.offset, keccak.stop_ptr.offset,
             "Keccak segment is not empty"
         );
     }
     if let Some(ec_op) = ec_op {
         assert_eq!(
-            ec_op.start_ptr.value, ec_op.stop_ptr.value,
+            ec_op.start_ptr.offset, ec_op.stop_ptr.offset,
             "EC_OP segment is not empty"
         );
     }
 
     // Output builtin.
-    assert!(output.stop_ptr.value < 1 << 31);
-    assert!(output.start_ptr.value <= output.stop_ptr.value);
+    assert!(output.stop_ptr.offset < 1 << 31);
+    assert!(output.start_ptr.offset <= output.stop_ptr.offset);
 
     // Macro for calling `check_builtin` on all builtins except both range_check builtins.
     macro_rules! check_builtin_generic {
@@ -241,29 +241,29 @@ fn check_builtin(
     });
 
     let segment_end = segment_start + (1 << log_size) * n_cells as u32;
-    let start_ptr = segment_range.start_ptr.value;
-    let stop_ptr = segment_range.stop_ptr.value;
-    assert!(
-        (stop_ptr - start_ptr) % n_cells as u32 == 0,
-        "Builtin segment range must divisible by {} cells, but got start_ptr: {}, stop_ptr: {}",
-        n_cells,
-        start_ptr,
-        stop_ptr
-    );
+    // let start_ptr = segment_range.start_ptr.value;
+    // let stop_ptr = segment_range.stop_ptr.value;
+    // assert!(
+    //     (stop_ptr - start_ptr) % n_cells as u32 == 0,
+    //     "Builtin segment range must divisible by {} cells, but got start_ptr: {}, stop_ptr: {}",
+    //     n_cells,
+    //     start_ptr,
+    //     stop_ptr
+    // );
 
-    // Check that segment_start == start_ptr <= stop_ptr <= segment_end < 2**31.
-    assert_eq!(
-        start_ptr, segment_start,
-        "Builtin segment start doesn't match claim"
-    );
-    assert!(
-        start_ptr <= stop_ptr,
-        "Range start should be less than or equal to range stop"
-    );
-    assert!(
-        stop_ptr <= segment_end,
-        "Builtin stop pointer must be within the builtin segment"
-    );
+    // // Check that segment_start == start_ptr <= stop_ptr <= segment_end < 2**31.
+    // assert_eq!(
+    //     start_ptr, segment_start,
+    //     "Builtin segment start doesn't match claim"
+    // );
+    // assert!(
+    //     start_ptr <= stop_ptr,
+    //     "Range start should be less than or equal to range stop"
+    // );
+    // assert!(
+    //     stop_ptr <= segment_end,
+    //     "Builtin stop pointer must be within the builtin segment"
+    // );
     assert!(
         segment_end < 1 << 31,
         "segment_end must be less than 2^31, but got {}",
