@@ -406,7 +406,7 @@ fn gen_single_big_memory_trace(values: &[[u32; 8]], mults: &[PackedM31]) -> Vec<
         }),
     );
 
-    let mut values_trace = std::iter::repeat_with(|| BaseColumn::zeros(column_length))
+    let mut values_trace = std::iter::repeat_with(|| BaseColumn::zeros(column_length * N_LANES))
         .take(N_M31_IN_FELT252)
         .collect_vec();
     for (i, values) in packed_values.iter().enumerate() {
